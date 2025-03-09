@@ -1,6 +1,8 @@
 
 import React from 'react';
+import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import ProcurementTable from '@/components/procurement/ProcurementTable';
+import SupplierPerformance from '@/components/procurement/SupplierPerformance';
 
 const Procurement: React.FC = () => {
   return (
@@ -10,7 +12,18 @@ const Procurement: React.FC = () => {
         <p className="text-kitchen-muted-foreground mt-1">Manage purchase orders, deliveries, and suppliers</p>
       </div>
       
-      <ProcurementTable />
+      <Tabs defaultValue="orders" className="w-full">
+        <TabsList className="bg-kitchen-muted">
+          <TabsTrigger value="orders">Purchase Orders</TabsTrigger>
+          <TabsTrigger value="suppliers">Supplier Performance</TabsTrigger>
+        </TabsList>
+        <TabsContent value="orders" className="pt-4">
+          <ProcurementTable />
+        </TabsContent>
+        <TabsContent value="suppliers" className="pt-4">
+          <SupplierPerformance />
+        </TabsContent>
+      </Tabs>
     </div>
   );
 };

@@ -3,6 +3,7 @@ import React from 'react';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import ProcurementTable from '@/components/procurement/ProcurementTable';
 import SupplierPerformance from '@/components/procurement/SupplierPerformance';
+import ThreeWayMatching from '@/components/procurement/ThreeWayMatching';
 
 const Procurement: React.FC = () => {
   return (
@@ -15,10 +16,14 @@ const Procurement: React.FC = () => {
       <Tabs defaultValue="orders" className="w-full">
         <TabsList className="bg-kitchen-muted">
           <TabsTrigger value="orders">Purchase Orders</TabsTrigger>
+          <TabsTrigger value="matching">Three-Way Matching</TabsTrigger>
           <TabsTrigger value="suppliers">Supplier Performance</TabsTrigger>
         </TabsList>
         <TabsContent value="orders" className="pt-4">
           <ProcurementTable />
+        </TabsContent>
+        <TabsContent value="matching" className="pt-4">
+          <ThreeWayMatching />
         </TabsContent>
         <TabsContent value="suppliers" className="pt-4">
           <SupplierPerformance />

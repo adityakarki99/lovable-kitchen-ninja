@@ -5,6 +5,7 @@ import ProcurementTable from '@/components/procurement/ProcurementTable';
 import SupplierPerformance from '@/components/procurement/SupplierPerformance';
 import ThreeWayMatching from '@/components/procurement/ThreeWayMatching';
 import SupplierOrdering from '@/components/procurement/SupplierOrdering';
+import StocktakeModule from '@/components/stocktake/StocktakeModule';
 
 const Procurement: React.FC = () => {
   return (
@@ -20,6 +21,7 @@ const Procurement: React.FC = () => {
           <TabsTrigger value="orders">Purchase Orders</TabsTrigger>
           <TabsTrigger value="matching">Three-Way Matching</TabsTrigger>
           <TabsTrigger value="suppliers">Supplier Performance</TabsTrigger>
+          <TabsTrigger value="stocktake">Stocktake</TabsTrigger>
         </TabsList>
         <TabsContent value="ordering" className="pt-4">
           <SupplierOrdering />
@@ -32,6 +34,9 @@ const Procurement: React.FC = () => {
         </TabsContent>
         <TabsContent value="suppliers" className="pt-4">
           <SupplierPerformance />
+        </TabsContent>
+        <TabsContent value="stocktake" className="pt-4">
+          <StocktakeModule />
         </TabsContent>
       </Tabs>
     </div>

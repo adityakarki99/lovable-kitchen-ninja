@@ -13,6 +13,7 @@ import RecipeDetail from "./components/recipe/RecipeDetail";
 import NotFound from "./pages/NotFound";
 import Header from "./components/Header";
 import { Suspense } from "react";
+import MenuEngineering from "./pages/MenuEngineering";
 
 const queryClient = new QueryClient();
 
@@ -56,6 +57,14 @@ const App = () => (
             element={
               <AppLayout>
                 <RecipeDetail />
+              </AppLayout>
+            } 
+          />
+          <Route 
+            path="/menu-engineering" 
+            element={
+              <AppLayout>
+                <MenuEngineering />
               </AppLayout>
             } 
           />

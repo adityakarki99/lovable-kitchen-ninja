@@ -1,4 +1,3 @@
-
 import React, { useState } from 'react';
 import { Check, X, AlertTriangle, Eye, DollarSign, FileText, Edit, Save, Printer } from 'lucide-react';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
@@ -10,113 +9,17 @@ import { Progress } from '@/components/ui/progress';
 import { Badge } from '@/components/ui/badge';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { useToast } from '@/hooks/use-toast';
-
-// Mock data for a purchase order
-const mockPurchaseOrder = {
-  id: 'PO-2305',
-  supplier: 'Fresh Produce Co.',
-  dateOrdered: '2023-07-15',
-  dateDelivery: '2023-07-18',
-  paymentTerms: 'Net 30 Days',
-  status: 'Delivered',
-  totalExpected: 445.18,
-};
-
-// Mock data for receiving order
-const mockReceivingOrder = {
-  id: 'RO-1089',
-  dateReceived: '2023-07-18',
-  receivedBy: 'John Smith',
-  condition: 'Good',
-  notes: 'Some tomatoes were slightly damaged',
-};
-
-// Mock data for invoice
-const mockInvoice = {
-  id: 'INV-4720',
-  dateIssued: '2023-07-19',
-  dateDue: '2023-08-18',
-  supplierRef: 'FPC-89720',
-  total: 441.18,
-};
-
-// Mock data for line items with discrepancies
-const mockLineItems = [
-  {
-    id: 1,
-    name: 'Tomatoes',
-    poQty: '50kg',
-    poPrice: 2.50,
-    roQty: '48kg',
-    invoiceQty: '50kg',
-    invoicePrice: 2.50,
-    qtyVariance: -2,
-    priceVariance: 0,
-    totalVariance: -5.00,
-    status: 'quantity-mismatch',
-  },
-  {
-    id: 2,
-    name: 'Lettuce',
-    poQty: '30kg',
-    poPrice: 3.20,
-    roQty: '30kg',
-    invoiceQty: '30kg',
-    invoicePrice: 3.20,
-    qtyVariance: 0,
-    priceVariance: 0,
-    totalVariance: 0,
-    status: 'matched',
-  },
-  {
-    id: 3,
-    name: 'Onions',
-    poQty: '25kg',
-    poPrice: 1.50,
-    roQty: '25kg',
-    invoiceQty: '25kg',
-    invoicePrice: 1.60,
-    qtyVariance: 0,
-    priceVariance: 0.10,
-    totalVariance: 2.50,
-    status: 'price-mismatch',
-  },
-  {
-    id: 4,
-    name: 'Bell Peppers',
-    poQty: '15kg',
-    poPrice: 4.00,
-    roQty: '15kg',
-    invoiceQty: '15kg',
-    invoicePrice: 4.00,
-    qtyVariance: 0,
-    priceVariance: 0,
-    totalVariance: 0,
-    status: 'matched',
-  },
-  {
-    id: 5,
-    name: 'Cucumbers',
-    poQty: '20kg',
-    poPrice: 2.20,
-    roQty: '20kg',
-    invoiceQty: '20kg',
-    invoicePrice: 2.20,
-    qtyVariance: 0,
-    priceVariance: 0,
-    totalVariance: 0,
-    status: 'matched',
-  },
-];
+import { matchingData, purchaseOrders } from '@/data/procurementData';
 
 const LineItemMatching: React.FC = () => {
   const [activeTab, setActiveTab] = useState('summary');
-  const [selectedPO, setSelectedPO] = useState(mockPurchaseOrder.id);
-  const [lineItems, setLineItems] = useState(mockLineItems);
+  const [selectedPO, setSelectedPO] = useState(purchaseOrders[0].id);
+  const selectedMatch = matchingData.find(match => match.purchaseOrder.id === selectedPO);
   const { toast } = useToast();
 
   const getTotalVariance = () => {
-    return lineItems.reduce((sum, item) => sum + item.totalVariance, 0);
+    if (!selectedMatch) return 0;
+    return selectedMatch.discrepancies.reduce((sum, item) => sum + (item.difference || 0), 0);
   };
 
   const getStatusIcon = (status: string) => {
@@ -175,13 +78,13 @@ const LineItemMatching: React.FC = () => {
   };
 
   const handleResolveVariance = (itemId: number) => {
-    setLineItems(prevItems => 
-      prevItems.map(item => 
-        item.id === itemId 
-          ? { ...item, status: 'matched', qtyVariance: 0, priceVariance: 0, totalVariance: 0 } 
-          : item
-      )
-    );
+    // setLineItems(prevItems => 
+    //   prevItems.map(item => 
+    //     item.id === itemId 
+    //       ? { ...item, status: 'matched', qtyVariance: 0, priceVariance: 0, totalVariance: 0 } 
+    //       : item
+    //   )
+    // );
     
     toast({
       title: "Variance resolved",
@@ -189,7 +92,7 @@ const LineItemMatching: React.FC = () => {
     });
   };
 
-  const matchedPercent = (lineItems.filter(item => item.status === 'matched').length / lineItems.length) * 100;
+  const matchedPercent = 100; //(lineItems.filter(item => item.status === 'matched').length / lineItems.length) * 100;
 
   return (
     <div className="space-y-6">
@@ -207,9 +110,9 @@ const LineItemMatching: React.FC = () => {
               <SelectValue placeholder="Select PO" />
             </SelectTrigger>
             <SelectContent>
-              <SelectItem value="PO-2305">PO-2305</SelectItem>
-              <SelectItem value="PO-2304">PO-2304</SelectItem>
-              <SelectItem value="PO-2303">PO-2303</SelectItem>
+              {purchaseOrders.map(po => (
+                <SelectItem key={po.id} value={po.id}>{po.id}</SelectItem>
+              ))}
             </SelectContent>
           </Select>
           
@@ -231,28 +134,32 @@ const LineItemMatching: React.FC = () => {
             <CardTitle className="text-base">Purchase Order</CardTitle>
           </CardHeader>
           <CardContent className="pt-0">
-            <div className="space-y-1">
-              <div className="flex justify-between">
-                <span className="text-sm text-kitchen-muted-foreground">PO Number:</span>
-                <span className="text-sm font-medium">{mockPurchaseOrder.id}</span>
+            {selectedMatch ? (
+              <div className="space-y-1">
+                <div className="flex justify-between">
+                  <span className="text-sm text-kitchen-muted-foreground">PO Number:</span>
+                  <span className="text-sm font-medium">{selectedMatch.purchaseOrder.id}</span>
+                </div>
+                <div className="flex justify-between">
+                  <span className="text-sm text-kitchen-muted-foreground">Date Ordered:</span>
+                  <span className="text-sm">{selectedMatch.purchaseOrder.dateOrdered}</span>
+                </div>
+                <div className="flex justify-between">
+                  <span className="text-sm text-kitchen-muted-foreground">Expected Delivery:</span>
+                  <span className="text-sm">{selectedMatch.purchaseOrder.dateDelivery}</span>
+                </div>
+                <div className="flex justify-between">
+                  <span className="text-sm text-kitchen-muted-foreground">Payment Terms:</span>
+                  <span className="text-sm">{selectedMatch.purchaseOrder.paymentTerms}</span>
+                </div>
+                <div className="flex justify-between">
+                  <span className="text-sm text-kitchen-muted-foreground">Total:</span>
+                  <span className="text-sm font-medium">${selectedMatch.purchaseOrder.totalExpected.toFixed(2)}</span>
+                </div>
               </div>
-              <div className="flex justify-between">
-                <span className="text-sm text-kitchen-muted-foreground">Date Ordered:</span>
-                <span className="text-sm">{mockPurchaseOrder.dateOrdered}</span>
-              </div>
-              <div className="flex justify-between">
-                <span className="text-sm text-kitchen-muted-foreground">Expected Delivery:</span>
-                <span className="text-sm">{mockPurchaseOrder.dateDelivery}</span>
-              </div>
-              <div className="flex justify-between">
-                <span className="text-sm text-kitchen-muted-foreground">Payment Terms:</span>
-                <span className="text-sm">{mockPurchaseOrder.paymentTerms}</span>
-              </div>
-              <div className="flex justify-between">
-                <span className="text-sm text-kitchen-muted-foreground">Total:</span>
-                <span className="text-sm font-medium">${mockPurchaseOrder.totalExpected.toFixed(2)}</span>
-              </div>
-            </div>
+            ) : (
+              <div>No matching data found</div>
+            )}
           </CardContent>
         </Card>
         
@@ -261,28 +168,32 @@ const LineItemMatching: React.FC = () => {
             <CardTitle className="text-base">Receiving Order</CardTitle>
           </CardHeader>
           <CardContent className="pt-0">
-            <div className="space-y-1">
-              <div className="flex justify-between">
-                <span className="text-sm text-kitchen-muted-foreground">RO Number:</span>
-                <span className="text-sm font-medium">{mockReceivingOrder.id}</span>
+            {selectedMatch ? (
+              <div className="space-y-1">
+                <div className="flex justify-between">
+                  <span className="text-sm text-kitchen-muted-foreground">RO Number:</span>
+                  <span className="text-sm font-medium">{selectedMatch.receivingOrder.id}</span>
+                </div>
+                <div className="flex justify-between">
+                  <span className="text-sm text-kitchen-muted-foreground">Date Received:</span>
+                  <span className="text-sm">{selectedMatch.receivingOrder.dateReceived}</span>
+                </div>
+                <div className="flex justify-between">
+                  <span className="text-sm text-kitchen-muted-foreground">Received By:</span>
+                  <span className="text-sm">{selectedMatch.receivingOrder.receivedBy}</span>
+                </div>
+                <div className="flex justify-between">
+                  <span className="text-sm text-kitchen-muted-foreground">Condition:</span>
+                  <span className="text-sm">{selectedMatch.receivingOrder.condition}</span>
+                </div>
+                <div className="flex justify-between">
+                  <span className="text-sm text-kitchen-muted-foreground">Notes:</span>
+                  <span className="text-sm">{selectedMatch.receivingOrder.notes}</span>
+                </div>
               </div>
-              <div className="flex justify-between">
-                <span className="text-sm text-kitchen-muted-foreground">Date Received:</span>
-                <span className="text-sm">{mockReceivingOrder.dateReceived}</span>
-              </div>
-              <div className="flex justify-between">
-                <span className="text-sm text-kitchen-muted-foreground">Received By:</span>
-                <span className="text-sm">{mockReceivingOrder.receivedBy}</span>
-              </div>
-              <div className="flex justify-between">
-                <span className="text-sm text-kitchen-muted-foreground">Condition:</span>
-                <span className="text-sm">{mockReceivingOrder.condition}</span>
-              </div>
-              <div className="flex justify-between">
-                <span className="text-sm text-kitchen-muted-foreground">Notes:</span>
-                <span className="text-sm">{mockReceivingOrder.notes}</span>
-              </div>
-            </div>
+            ) : (
+              <div>No matching data found</div>
+            )}
           </CardContent>
         </Card>
         
@@ -291,28 +202,32 @@ const LineItemMatching: React.FC = () => {
             <CardTitle className="text-base">Invoice</CardTitle>
           </CardHeader>
           <CardContent className="pt-0">
-            <div className="space-y-1">
-              <div className="flex justify-between">
-                <span className="text-sm text-kitchen-muted-foreground">Invoice Number:</span>
-                <span className="text-sm font-medium">{mockInvoice.id}</span>
+            {selectedMatch ? (
+              <div className="space-y-1">
+                <div className="flex justify-between">
+                  <span className="text-sm text-kitchen-muted-foreground">Invoice Number:</span>
+                  <span className="text-sm font-medium">{selectedMatch.invoice.id}</span>
+                </div>
+                <div className="flex justify-between">
+                  <span className="text-sm text-kitchen-muted-foreground">Date Issued:</span>
+                  <span className="text-sm">{selectedMatch.invoice.dateIssued}</span>
+                </div>
+                <div className="flex justify-between">
+                  <span className="text-sm text-kitchen-muted-foreground">Date Due:</span>
+                  <span className="text-sm">{selectedMatch.invoice.dateDue}</span>
+                </div>
+                <div className="flex justify-between">
+                  <span className="text-sm text-kitchen-muted-foreground">Supplier Ref:</span>
+                  <span className="text-sm">{selectedMatch.invoice.supplierRef}</span>
+                </div>
+                <div className="flex justify-between">
+                  <span className="text-sm text-kitchen-muted-foreground">Total:</span>
+                  <span className="text-sm font-medium">${selectedMatch.invoice.total.toFixed(2)}</span>
+                </div>
               </div>
-              <div className="flex justify-between">
-                <span className="text-sm text-kitchen-muted-foreground">Date Issued:</span>
-                <span className="text-sm">{mockInvoice.dateIssued}</span>
-              </div>
-              <div className="flex justify-between">
-                <span className="text-sm text-kitchen-muted-foreground">Date Due:</span>
-                <span className="text-sm">{mockInvoice.dateDue}</span>
-              </div>
-              <div className="flex justify-between">
-                <span className="text-sm text-kitchen-muted-foreground">Supplier Ref:</span>
-                <span className="text-sm">{mockInvoice.supplierRef}</span>
-              </div>
-              <div className="flex justify-between">
-                <span className="text-sm text-kitchen-muted-foreground">Total:</span>
-                <span className="text-sm font-medium">${mockInvoice.total.toFixed(2)}</span>
-              </div>
-            </div>
+            ) : (
+              <div>No matching data found</div>
+            )}
           </CardContent>
         </Card>
       </div>
@@ -350,14 +265,14 @@ const LineItemMatching: React.FC = () => {
                 <Card>
                   <CardContent className="p-4">
                     <div className="text-kitchen-muted-foreground mb-1">PO Total</div>
-                    <div className="text-xl font-semibold">${mockPurchaseOrder.totalExpected.toFixed(2)}</div>
+                    <div className="text-xl font-semibold">${selectedMatch?.purchaseOrder.totalExpected.toFixed(2)}</div>
                   </CardContent>
                 </Card>
                 
                 <Card>
                   <CardContent className="p-4">
                     <div className="text-kitchen-muted-foreground mb-1">Invoice Total</div>
-                    <div className="text-xl font-semibold">${mockInvoice.total.toFixed(2)}</div>
+                    <div className="text-xl font-semibold">${selectedMatch?.invoice.total.toFixed(2)}</div>
                   </CardContent>
                 </Card>
                 
@@ -383,7 +298,7 @@ const LineItemMatching: React.FC = () => {
                 </CardHeader>
                 <CardContent>
                   <div className="space-y-3">
-                    {lineItems.filter(item => item.status !== 'matched').map(item => (
+                    {/* {lineItems.filter(item => item.status !== 'matched').map(item => (
                       <div key={item.id} className="flex justify-between items-center border-b pb-2">
                         <div>
                           <div className="font-medium">{item.name}</div>
@@ -406,14 +321,14 @@ const LineItemMatching: React.FC = () => {
                           </Button>
                         </div>
                       </div>
-                    ))}
+                    ))} */}
                     
-                    {lineItems.every(item => item.status === 'matched') && (
+                    {/* {lineItems.every(item => item.status === 'matched') && (
                       <div className="flex justify-center items-center py-6 text-kitchen-success">
                         <Check className="h-5 w-5 mr-2" />
                         All items matched successfully
                       </div>
-                    )}
+                    )} */}
                   </div>
                 </CardContent>
               </Card>
@@ -461,7 +376,7 @@ const LineItemMatching: React.FC = () => {
                 </TableRow>
               </TableHeader>
               <TableBody>
-                {lineItems.map(item => (
+                {/* {lineItems.map(item => (
                   <TableRow key={item.id} className="hover:bg-kitchen-muted/30">
                     <TableCell className="font-medium">{item.name}</TableCell>
                     <TableCell className="text-center">{item.poQty}</TableCell>
@@ -499,7 +414,7 @@ const LineItemMatching: React.FC = () => {
                       )}
                     </TableCell>
                   </TableRow>
-                ))}
+                ))} */}
               </TableBody>
             </Table>
           </TabsContent>

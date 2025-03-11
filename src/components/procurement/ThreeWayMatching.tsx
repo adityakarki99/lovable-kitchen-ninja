@@ -1,4 +1,3 @@
-
 import React, { useState } from 'react';
 import { Search, Filter, CheckCircle, XCircle, AlertCircle, FileCheck, FileText, Truck, Clock, User } from 'lucide-react';
 import { Input } from '@/components/ui/input';
@@ -10,139 +9,7 @@ import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { Progress } from '@/components/ui/progress';
 import { cn } from '@/lib/utils';
 import { useToast } from '@/hooks/use-toast';
-
-// Mock data for Three-Way Matching
-const matchingData = [
-  {
-    id: 'MATCH-1001',
-    poNumber: 'PO-2305',
-    roNumber: 'RO-4501',
-    invoiceNumber: 'INV-7801',
-    supplier: 'Fresh Produce Co.',
-    dateOrdered: '2023-07-15',
-    dateDelivered: '2023-07-18',
-    dateInvoiced: '2023-07-19',
-    status: 'Matched',
-    poTotal: 445.18,
-    roTotal: 445.18,
-    invoiceTotal: 445.18,
-    matchPercentage: 100,
-    discrepancies: [],
-    approver: 'James Wilson',
-    approvalStatus: 'Approved',
-    paymentStatus: 'Paid'
-  },
-  {
-    id: 'MATCH-1002',
-    poNumber: 'PO-2304',
-    roNumber: 'RO-4502',
-    invoiceNumber: 'INV-7802',
-    supplier: 'Premium Meats',
-    dateOrdered: '2023-07-14',
-    dateDelivered: '2023-07-19',
-    dateInvoiced: '2023-07-20',
-    status: 'Partial Match',
-    poTotal: 1255.70,
-    roTotal: 1180.30,
-    invoiceTotal: 1255.70,
-    matchPercentage: 70,
-    discrepancies: [
-      { type: 'Quantity', item: 'Beef Sirloin', expected: '15kg', received: '12kg', difference: -75.40 }
-    ],
-    approver: 'Michael Brown',
-    approvalStatus: 'Pending',
-    paymentStatus: 'On Hold'
-  },
-  {
-    id: 'MATCH-1003',
-    poNumber: 'PO-2303',
-    roNumber: 'RO-4503',
-    invoiceNumber: 'INV-7803',
-    supplier: 'Seafood Direct',
-    dateOrdered: '2023-07-13',
-    dateDelivered: '2023-07-16',
-    dateInvoiced: '2023-07-17',
-    status: 'Discrepancy',
-    poTotal: 852.35,
-    roTotal: 852.35,
-    invoiceTotal: 895.60,
-    matchPercentage: 30,
-    discrepancies: [
-      { type: 'Price', item: 'Salmon Fillet', expected: '$15.50/kg', billed: '$17.20/kg', difference: 43.25 }
-    ],
-    approver: 'Sarah Davis',
-    approvalStatus: 'Rejected',
-    paymentStatus: 'Disputed'
-  },
-  {
-    id: 'MATCH-1004',
-    poNumber: 'PO-2302',
-    roNumber: 'RO-4504',
-    invoiceNumber: 'INV-7804',
-    supplier: 'Global Spices',
-    dateOrdered: '2023-07-12',
-    dateDelivered: '2023-07-19',
-    dateInvoiced: '2023-07-21',
-    status: 'Incomplete',
-    poTotal: 320.80,
-    roTotal: 320.80,
-    invoiceTotal: null,
-    matchPercentage: 50,
-    discrepancies: [
-      { type: 'Missing Invoice', item: 'N/A', expected: 'Invoice Document', received: 'Not Received', difference: null }
-    ],
-    approver: 'Pending',
-    approvalStatus: 'Awaiting Invoice',
-    paymentStatus: 'Not Started'
-  },
-  {
-    id: 'MATCH-1005',
-    poNumber: 'PO-2301',
-    roNumber: 'RO-4505',
-    invoiceNumber: 'INV-7805',
-    supplier: 'Bakery Supplies Inc.',
-    dateOrdered: '2023-07-11',
-    dateDelivered: '2023-07-14',
-    dateInvoiced: '2023-07-15',
-    status: 'Matched',
-    poTotal: 645.90,
-    roTotal: 645.90,
-    invoiceTotal: 645.90,
-    matchPercentage: 100,
-    discrepancies: [],
-    approver: 'James Wilson',
-    approvalStatus: 'Approved',
-    paymentStatus: 'Paid'
-  },
-];
-
-// Mock metrics for Three-Way Matching dashboard
-const matchingMetrics = [
-  {
-    title: "Matched Invoices",
-    value: "87%",
-    description: "Last 30 days",
-    trend: "up"
-  },
-  {
-    title: "Average Resolution Time",
-    value: "1.5 days",
-    description: "For discrepancies",
-    trend: "down"
-  },
-  {
-    title: "Cost Savings",
-    value: "$1,245.82",
-    description: "From invoice corrections",
-    trend: "up"
-  },
-  {
-    title: "Pending Approvals",
-    value: "3",
-    description: "Requiring attention",
-    trend: "neutral"
-  }
-];
+import { matchingData } from '@/data/procurementData';
 
 interface MetricCardProps {
   title: string;
@@ -189,12 +56,12 @@ const ThreeWayMatching: React.FC = () => {
   const [selectedMatch, setSelectedMatch] = useState<string | null>(null);
   const { toast } = useToast();
   
-  const filteredMatches = matchingData.filter(match => 
+  const filteredMatches = matchingData.filter(match =>
     match.id.toLowerCase().includes(searchQuery.toLowerCase()) ||
-    match.supplier.toLowerCase().includes(searchQuery.toLowerCase()) ||
+    match.purchaseOrder.supplier.name.toLowerCase().includes(searchQuery.toLowerCase()) ||
     match.status.toLowerCase().includes(searchQuery.toLowerCase()) ||
-    match.poNumber.toLowerCase().includes(searchQuery.toLowerCase()) ||
-    match.invoiceNumber?.toLowerCase().includes(searchQuery.toLowerCase() || '')
+    match.purchaseOrder.id.toLowerCase().includes(searchQuery.toLowerCase()) ||
+    match.invoice.id.toLowerCase().includes(searchQuery.toLowerCase())
   );
 
   const getStatusIcon = (status: string) => {
@@ -286,7 +153,7 @@ const ThreeWayMatching: React.FC = () => {
   return (
     <div className="space-y-6 animate-slide-up">
       <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-4 gap-4">
-        {matchingMetrics.map((metric, index) => (
+        {/* {matchingMetrics.map((metric, index) => (
           <MetricCard
             key={index}
             title={metric.title}
@@ -294,7 +161,7 @@ const ThreeWayMatching: React.FC = () => {
             description={metric.description}
             trend={metric.trend as 'up' | 'down' | 'neutral'}
           />
-        ))}
+        ))} */}
       </div>
 
       <div className="flex flex-col sm:flex-row gap-4 items-stretch sm:items-center justify-between">
@@ -343,23 +210,23 @@ const ThreeWayMatching: React.FC = () => {
                   onClick={() => handleRowClick(match.id)}
                 >
                   <TableCell className="font-medium">{match.id}</TableCell>
-                  <TableCell>{match.supplier}</TableCell>
+                  <TableCell>{match.purchaseOrder.supplier.name}</TableCell>
                   <TableCell>
                     <div className="flex items-center gap-1">
                       <FileText className="h-3.5 w-3.5 text-kitchen-muted-foreground" />
-                      {match.poNumber}
+                      {match.purchaseOrder.id}
                     </div>
                   </TableCell>
                   <TableCell>
                     <div className="flex items-center gap-1">
                       <Truck className="h-3.5 w-3.5 text-kitchen-muted-foreground" />
-                      {match.roNumber}
+                      {match.receivingOrder.id}
                     </div>
                   </TableCell>
                   <TableCell>
                     <div className="flex items-center gap-1">
                       <FileCheck className="h-3.5 w-3.5 text-kitchen-muted-foreground" />
-                      {match.invoiceNumber || "Not Received"}
+                      {match.invoice.id || "Not Received"}
                     </div>
                   </TableCell>
                   <TableCell>
@@ -422,15 +289,15 @@ const ThreeWayMatching: React.FC = () => {
                             <div className="space-y-2 text-sm">
                               <div className="flex justify-between">
                                 <span className="text-kitchen-muted-foreground">PO Number:</span>
-                                <span className="font-medium">{match.poNumber}</span>
+                                <span className="font-medium">{match.purchaseOrder.id}</span>
                               </div>
                               <div className="flex justify-between">
                                 <span className="text-kitchen-muted-foreground">Date Ordered:</span>
-                                <span>{match.dateOrdered}</span>
+                                <span>{match.purchaseOrder.dateOrdered}</span>
                               </div>
                               <div className="flex justify-between">
                                 <span className="text-kitchen-muted-foreground">Total Value:</span>
-                                <span className="font-medium">${match.poTotal.toFixed(2)}</span>
+                                <span className="font-medium">${match.purchaseOrder.totalExpected.toFixed(2)}</span>
                               </div>
                             </div>
                           </div>
@@ -443,15 +310,15 @@ const ThreeWayMatching: React.FC = () => {
                             <div className="space-y-2 text-sm">
                               <div className="flex justify-between">
                                 <span className="text-kitchen-muted-foreground">RO Number:</span>
-                                <span className="font-medium">{match.roNumber}</span>
+                                <span className="font-medium">{match.receivingOrder.id}</span>
                               </div>
                               <div className="flex justify-between">
                                 <span className="text-kitchen-muted-foreground">Date Delivered:</span>
-                                <span>{match.dateDelivered}</span>
+                                <span>{match.receivingOrder.dateReceived}</span>
                               </div>
                               <div className="flex justify-between">
                                 <span className="text-kitchen-muted-foreground">Received Value:</span>
-                                <span className="font-medium">${match.roTotal.toFixed(2)}</span>
+                                <span className="font-medium">${match.receivingOrder.purchaseOrder.totalExpected.toFixed(2)}</span>
                               </div>
                             </div>
                           </div>
@@ -464,16 +331,16 @@ const ThreeWayMatching: React.FC = () => {
                             <div className="space-y-2 text-sm">
                               <div className="flex justify-between">
                                 <span className="text-kitchen-muted-foreground">Invoice Number:</span>
-                                <span className="font-medium">{match.invoiceNumber || "Not Received"}</span>
+                                <span className="font-medium">{match.invoice.id || "Not Received"}</span>
                               </div>
                               <div className="flex justify-between">
                                 <span className="text-kitchen-muted-foreground">Date Invoiced:</span>
-                                <span>{match.dateInvoiced || "N/A"}</span>
+                                <span>{match.invoice.dateIssued || "N/A"}</span>
                               </div>
                               <div className="flex justify-between">
                                 <span className="text-kitchen-muted-foreground">Invoiced Value:</span>
                                 <span className="font-medium">
-                                  {match.invoiceTotal ? `$${match.invoiceTotal.toFixed(2)}` : "N/A"}
+                                  {match.invoice.total ? `$${match.invoice.total.toFixed(2)}` : "N/A"}
                                 </span>
                               </div>
                             </div>
@@ -488,7 +355,7 @@ const ThreeWayMatching: React.FC = () => {
                                 <div key={idx} className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-2 text-sm">
                                   <div>
                                     <span className="font-medium">{d.type}</span>
-                                    {d.item !== 'N/A' && <span className="text-kitchen-muted-foreground"> in {d.item}</span>}
+                                    {d.item !== 'N/A' && <span className="text-kitchen-muted-foreground"> in {d.item.name}</span>}
                                   </div>
                                   <div className="flex items-center gap-2">
                                     <span>Expected: {d.expected}</span>

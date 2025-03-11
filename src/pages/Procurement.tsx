@@ -7,6 +7,8 @@ import ThreeWayMatching from '@/components/procurement/ThreeWayMatching';
 import SupplierOrdering from '@/components/procurement/SupplierOrdering';
 import StocktakeModule from '@/components/stocktake/StocktakeModule';
 import ProductionModule from '@/components/production/ProductionModule';
+import ReorderPointConfiguration from '@/components/procurement/ReorderPointConfiguration';
+import PurchaseOrderApproval from '@/components/procurement/PurchaseOrderApproval';
 
 const Procurement: React.FC = () => {
   return (
@@ -20,6 +22,8 @@ const Procurement: React.FC = () => {
         <TabsList className="bg-kitchen-muted">
           <TabsTrigger value="ordering">Supplier Ordering</TabsTrigger>
           <TabsTrigger value="orders">Purchase Orders</TabsTrigger>
+          <TabsTrigger value="approval">PO Approval</TabsTrigger>
+          <TabsTrigger value="reorder">Reorder Points</TabsTrigger>
           <TabsTrigger value="matching">Three-Way Matching</TabsTrigger>
           <TabsTrigger value="suppliers">Supplier Performance</TabsTrigger>
           <TabsTrigger value="stocktake">Stocktake</TabsTrigger>
@@ -30,6 +34,12 @@ const Procurement: React.FC = () => {
         </TabsContent>
         <TabsContent value="orders" className="pt-4">
           <ProcurementTable />
+        </TabsContent>
+        <TabsContent value="approval" className="pt-4">
+          <PurchaseOrderApproval />
+        </TabsContent>
+        <TabsContent value="reorder" className="pt-4">
+          <ReorderPointConfiguration />
         </TabsContent>
         <TabsContent value="matching" className="pt-4">
           <ThreeWayMatching />

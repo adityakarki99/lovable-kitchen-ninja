@@ -237,7 +237,7 @@ const ColoredProgress = ({ value, className }: { value: number, className?: stri
     <Progress 
       value={value} 
       className={cn("h-2", className)} 
-      indicatorClassName={getProgressColor()}
+      indicatorColor={getProgressColor()}
     />
   );
 };

@@ -1,11 +1,10 @@
-
 import React, { useState } from 'react';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@/components/ui/table';
 import { Input } from '@/components/ui/input';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { Button } from '@/components/ui/button';
-import { Star, Puzzle, Horse, Dog, Search, Filter, ArrowUpDown, Edit } from 'lucide-react';
+import { Star, Puzzle, CircleDollarSign, Dog, Search, Filter, ArrowUpDown, Edit } from 'lucide-react';
 import { Badge } from '@/components/ui/badge';
 
 // Mock data for menu items
@@ -52,7 +51,7 @@ const MenuItemAnalysis: React.FC = () => {
       case 'puzzle':
         return <Puzzle className="h-4 w-4 text-blue-500" />;
       case 'plowHorse':
-        return <Horse className="h-4 w-4 text-green-500" />;
+        return <CircleDollarSign className="h-4 w-4 text-green-500" />;
       case 'dog':
         return <Dog className="h-4 w-4 text-red-500" />;
       default:

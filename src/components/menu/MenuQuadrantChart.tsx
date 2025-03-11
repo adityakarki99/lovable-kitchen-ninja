@@ -1,7 +1,6 @@
-
 import React from 'react';
 import { ScatterChart, Scatter, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer, ZAxis, Legend, ReferenceArea } from 'recharts';
-import { Star, Puzzle, Horse, Dog } from 'lucide-react';
+import { Star, Puzzle, CircleDollarSign, Dog } from 'lucide-react';
 
 // Mock data for menu items
 const menuItems = [

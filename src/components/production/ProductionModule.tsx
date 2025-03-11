@@ -1,4 +1,3 @@
-
 import React, { useState } from 'react';
 import { Search, Filter, Calendar, CheckCircle, Clock, AlertTriangle, ChefHat, Thermometer, Utensils, Clipboard } from 'lucide-react';
 import { Input } from '@/components/ui/input';
@@ -9,7 +8,6 @@ import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@
 import { Progress } from '@/components/ui/progress';
 import { cn } from '@/lib/utils';
 
-// Mock production tasks
 const productionTasks = [
   { 
     id: 1, 
@@ -94,7 +92,6 @@ const productionTasks = [
   },
 ];
 
-// Mock kitchen equipment status
 const equipmentStatus = [
   { id: 1, name: 'Walk-in Fridge #1', temp: '3.8°C', status: 'normal', lastChecked: '09:15 AM' },
   { id: 2, name: 'Deep Fryer #1', oilQuality: '85%', status: 'normal', lastChecked: '09:30 AM' },
@@ -104,7 +101,6 @@ const equipmentStatus = [
   { id: 6, name: 'Prep Fridge #2', temp: '7.2°C', status: 'alert', lastChecked: '09:15 AM' },
 ];
 
-// Mock HACCP logs
 const haccpLogs = [
   { id: 1, item: 'Walk-in Fridge #1', checkType: 'Temperature', value: '3.8°C', limit: '<5°C', time: '09:15 AM', checkedBy: 'Chef Aditya', status: 'compliant' },
   { id: 2, item: 'Cooked Chicken', checkType: 'Core Temperature', value: '74°C', limit: '>74°C', time: '12:30 PM', checkedBy: 'Sous Chef Marcus', status: 'compliant' },
@@ -113,7 +109,6 @@ const haccpLogs = [
   { id: 5, item: 'Deep Fryer #1', checkType: 'Oil Quality', value: '85%', limit: '>60%', time: '09:30 AM', checkedBy: 'Chef Aditya', status: 'compliant' },
 ];
 
-// Production metrics
 const productionMetrics = [
   {
     title: "Active Tasks",
@@ -248,7 +243,6 @@ const ProductionModule: React.FC = () => {
           <TabsTrigger value="haccp">HACCP Logs</TabsTrigger>
         </TabsList>
         
-        {/* Production Tasks Tab */}
         <TabsContent value="tasks" className="pt-4">
           <Card className="shadow-apple-sm overflow-hidden">
             <Table>
@@ -283,7 +277,7 @@ const ProductionModule: React.FC = () => {
                         <Progress 
                           value={task.progress} 
                           className="h-2"
-                          indicatorClassName={cn(
+                          indicatorColor={cn(
                             task.status === 'completed' ? "bg-kitchen-success" :
                             task.status === 'in-progress' ? "bg-kitchen-warning" :
                             task.status === 'delayed' ? "bg-kitchen-danger" :
@@ -300,7 +294,6 @@ const ProductionModule: React.FC = () => {
           </Card>
         </TabsContent>
         
-        {/* Mise en Place Tab */}
         <TabsContent value="mise" className="pt-4">
           <div className="grid gap-4">
             {filteredTasks.map((task) => (
@@ -353,7 +346,7 @@ const ProductionModule: React.FC = () => {
                     <Progress 
                       value={task.progress} 
                       className="h-2"
-                      indicatorClassName={cn(
+                      indicatorColor={cn(
                         task.status === 'completed' ? "bg-kitchen-success" :
                         task.status === 'in-progress' ? "bg-kitchen-warning" :
                         task.status === 'delayed' ? "bg-kitchen-danger" :
@@ -367,7 +360,6 @@ const ProductionModule: React.FC = () => {
           </div>
         </TabsContent>
         
-        {/* Equipment Tab */}
         <TabsContent value="equipment" className="pt-4">
           <div className="grid gap-4 grid-cols-1 sm:grid-cols-2 lg:grid-cols-3">
             {equipmentStatus.map((equipment) => (
@@ -413,7 +405,6 @@ const ProductionModule: React.FC = () => {
           </div>
         </TabsContent>
         
-        {/* HACCP Logs Tab */}
         <TabsContent value="haccp" className="pt-4">
           <Card className="shadow-apple-sm overflow-hidden">
             <Table>

@@ -1,4 +1,3 @@
-
 import React, { useState } from 'react';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
@@ -6,7 +5,7 @@ import { Button } from '@/components/ui/button';
 import { Calendar } from '@/components/ui/calendar';
 import { Popover, PopoverContent, PopoverTrigger } from '@/components/ui/popover';
 import { format } from 'date-fns';
-import { Calendar as CalendarIcon, Star, Puzzle, Horse, Dog, PlusCircle, FileText, Calculator } from 'lucide-react';
+import { Calendar as CalendarIcon, Star, Puzzle, CircleDollarSign, Dog, PlusCircle, FileText, Calculator } from 'lucide-react';
 import MenuQuadrantChart from './MenuQuadrantChart';
 import MenuMetricsCards from './MenuMetricsCards';
 
@@ -122,7 +121,7 @@ const MenuAnalysisDashboard: React.FC = () => {
           <span className="text-sm">Puzzles: High Profit, Low Popularity</span>
         </div>
         <div className="flex items-center gap-2">
-          <Horse className="h-5 w-5 text-green-500" />
+          <CircleDollarSign className="h-5 w-5 text-green-500" />
           <span className="text-sm">Plow Horses: Low Profit, High Popularity</span>
         </div>
         <div className="flex items-center gap-2">

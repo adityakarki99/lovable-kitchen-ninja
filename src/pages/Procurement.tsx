@@ -16,7 +16,7 @@ const Procurement: React.FC = () => {
         <p className="text-kitchen-muted-foreground mt-1">Manage purchase orders, deliveries, and suppliers</p>
       </div>
       
-      <Tabs defaultValue="stocktake" className="w-full">
+      <Tabs defaultValue="ordering" className="w-full">
         <TabsList className="bg-kitchen-muted">
           <TabsTrigger value="ordering">Supplier Ordering</TabsTrigger>
           <TabsTrigger value="orders">Purchase Orders</TabsTrigger>

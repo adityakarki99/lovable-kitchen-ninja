@@ -1,6 +1,5 @@
-
 import React, { useState } from 'react';
-import { Search, Filter, Plus, CheckCircle, Clock, AlertTriangle, ShoppingCart, BarChart3 } from 'lucide-react';
+import { Search, Filter, Plus, CheckCircle, Clock, AlertTriangle, ShoppingCart, CircleDollarSign, BarChart3 } from 'lucide-react';
 import { Input } from '@/components/ui/input';
 import { Button } from '@/components/ui/button';
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@/components/ui/table';
@@ -10,6 +9,10 @@ import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { cn } from '@/lib/utils';
 import { Badge } from '@/components/ui/badge';
 import { useToast } from '@/hooks/use-toast';
+import SupplierSelector from './SupplierSelector';
+import ItemSelection from './ItemSelection';
+import OrderSummary from './OrderSummary';
+import LineItemMatching from './LineItemMatching';
 
 // Mock data for supplier orders
 const supplierOrders = [
@@ -99,6 +102,8 @@ const suppliers = [
 const SupplierOrdering: React.FC = () => {
   const [searchQuery, setSearchQuery] = useState('');
   const [activeTab, setActiveTab] = useState('orders');
+  const [selectedSupplier, setSelectedSupplier] = useState<number | null>(null);
+  const [selectedItems, setSelectedItems] = useState<Array<{id: number, name: string, quantity: string, price: number}>>([]);
   const { toast } = useToast();
   
   const filteredOrders = supplierOrders.filter(order => 
@@ -158,6 +163,19 @@ const SupplierOrdering: React.FC = () => {
     });
   };
 
+  const handleSupplierSelect = (supplierId: number) => {
+    setSelectedSupplier(supplierId);
+    setActiveTab('new-order');
+  };
+
+  const handleAddItem = (item: {id: number, name: string, quantity: string, price: number}) => {
+    setSelectedItems(prev => [...prev, item]);
+  };
+
+  const handleRemoveItem = (itemId: number) => {
+    setSelectedItems(prev => prev.filter(item => item.id !== itemId));
+  };
+
   return (
     <div className="space-y-6 animate-slide-up">
       <div>
@@ -168,6 +186,8 @@ const SupplierOrdering: React.FC = () => {
       <Tabs value={activeTab} onValueChange={setActiveTab} className="w-full">
         <TabsList className="bg-kitchen-muted">
           <TabsTrigger value="orders">Purchase Orders</TabsTrigger>
+          <TabsTrigger value="new-order">Create Order</TabsTrigger>
+          <TabsTrigger value="line-item-matching">Line-Item Matching</TabsTrigger>
           <TabsTrigger value="par">PAR Level Alerts</TabsTrigger>
           <TabsTrigger value="suppliers">Suppliers</TabsTrigger>
         </TabsList>
@@ -189,7 +209,11 @@ const SupplierOrdering: React.FC = () => {
                 <Filter className="mr-2 h-4 w-4" />
                 Filter
               </Button>
-              <Button size="sm" className="bg-kitchen-primary hover:bg-kitchen-primary/90" onClick={createNewOrder}>
+              <Button 
+                size="sm" 
+                className="bg-kitchen-primary hover:bg-kitchen-primary/90" 
+                onClick={() => setActiveTab('new-order')}
+              >
                 <Plus className="mr-2 h-4 w-4" />
                 New Order
               </Button>
@@ -253,12 +277,58 @@ const SupplierOrdering: React.FC = () => {
                           Approve
                         </Button>
                       )}
+                      {order.status === 'Delivered' && (
+                        <Button 
+                          variant="outline" 
+                          size="sm"
+                          onClick={() => setActiveTab('line-item-matching')}
+                        >
+                          Match
+                        </Button>
+                      )}
                     </TableCell>
                   </TableRow>
                 ))}
               </TableBody>
             </Table>
           </Card>
+        </TabsContent>
+        
+        {/* Create New Order Tab */}
+        <TabsContent value="new-order" className="pt-4">
+          <div className="grid grid-cols-1 lg:grid-cols-12 gap-4">
+            {/* Supplier Selection Panel */}
+            <div className="lg:col-span-3">
+              <SupplierSelector 
+                suppliers={suppliers} 
+                selectedSupplier={selectedSupplier} 
+                onSupplierSelect={handleSupplierSelect} 
+              />
+            </div>
+            
+            {/* Item Selection Panel */}
+            <div className="lg:col-span-6">
+              <ItemSelection 
+                supplierId={selectedSupplier} 
+                parLevelAlerts={parLevelAlerts}
+                onAddItem={handleAddItem}
+              />
+            </div>
+            
+            {/* Order Summary Panel */}
+            <div className="lg:col-span-3">
+              <OrderSummary 
+                items={selectedItems} 
+                onRemoveItem={handleRemoveItem}
+                onCreateOrder={createNewOrder}
+              />
+            </div>
+          </div>
+        </TabsContent>
+        
+        {/* Line-Item Matching Tab */}
+        <TabsContent value="line-item-matching" className="pt-4">
+          <LineItemMatching />
         </TabsContent>
         
         {/* PAR Level Alerts Tab */}
@@ -341,7 +411,7 @@ const SupplierOrdering: React.FC = () => {
                       <Button 
                         size="sm" 
                         className="bg-kitchen-primary hover:bg-kitchen-primary/90"
-                        onClick={createNewOrder}
+                        onClick={() => handleSupplierSelect(supplier.id)}
                       >
                         <Plus className="h-4 w-4 mr-2" />
                         New Order

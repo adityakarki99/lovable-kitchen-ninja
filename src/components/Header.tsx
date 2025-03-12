@@ -1,7 +1,7 @@
 
 import React from 'react';
 import { Link, useLocation } from 'react-router-dom';
-import { Bell, ChefHat, Package, ShoppingCart, BarChart3, Menu } from 'lucide-react';
+import { Bell, ChefHat, Package, ShoppingCart, BarChart3, Menu, DollarSign } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Sheet, SheetContent, SheetTrigger } from '@/components/ui/sheet';
 import { useIsMobile } from '@/hooks/use-mobile';
@@ -15,6 +15,7 @@ const Header: React.FC = () => {
     { name: 'Recipes', path: '/recipes', icon: <ChefHat className="w-4 h-4 mr-2" /> },
     { name: 'Inventory', path: '/inventory', icon: <Package className="w-4 h-4 mr-2" /> },
     { name: 'Procurement', path: '/procurement', icon: <ShoppingCart className="w-4 h-4 mr-2" /> },
+    { name: 'Financial', path: '/financial', icon: <DollarSign className="w-4 h-4 mr-2" /> },
   ];
 
   const NavLink = ({ item }: { item: typeof navItems[0] }) => (

@@ -9,6 +9,7 @@ import Dashboard from "./pages/Dashboard";
 import Recipes from "./pages/Recipes";
 import Inventory from "./pages/Inventory";
 import Procurement from "./pages/Procurement";
+import Financial from "./pages/Financial";
 import RecipeDetail from "./components/recipe/RecipeDetail";
 import NotFound from "./pages/NotFound";
 import Header from "./components/Header";
@@ -44,7 +45,7 @@ const App = () => (
             } 
           />
           <Route 
-            path="/recipes" 
+            path="/recipes/*" 
             element={
               <AppLayout>
                 <Recipes />
@@ -52,15 +53,7 @@ const App = () => (
             } 
           />
           <Route 
-            path="/recipes/:id" 
-            element={
-              <AppLayout>
-                <RecipeDetail />
-              </AppLayout>
-            } 
-          />
-          <Route 
-            path="/inventory" 
+            path="/inventory/*" 
             element={
               <AppLayout>
                 <Inventory />
@@ -68,10 +61,18 @@ const App = () => (
             } 
           />
           <Route 
-            path="/procurement" 
+            path="/procurement/*" 
             element={
               <AppLayout>
                 <Procurement />
+              </AppLayout>
+            } 
+          />
+          <Route 
+            path="/financial/*" 
+            element={
+              <AppLayout>
+                <Financial />
               </AppLayout>
             } 
           />

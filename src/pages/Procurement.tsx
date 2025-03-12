@@ -9,13 +9,14 @@ import StocktakeModule from '@/components/stocktake/StocktakeModule';
 import ProductionModule from '@/components/production/ProductionModule';
 import ReorderPointConfiguration from '@/components/procurement/ReorderPointConfiguration';
 import PurchaseOrderApproval from '@/components/procurement/PurchaseOrderApproval';
+import WastageManagementModule from '@/components/wastage/WastageManagementModule';
 
 const Procurement: React.FC = () => {
   return (
     <div className="space-y-8 animate-fade-in pb-12">
       <div>
         <h1 className="text-3xl font-semibold">Procurement <span className="text-sm bg-kitchen-primary text-white px-2 py-0.5 rounded-full ml-2">2</span></h1>
-        <p className="text-kitchen-muted-foreground mt-1">Manage purchase orders, deliveries, and suppliers</p>
+        <p className="text-kitchen-muted-foreground mt-1">Manage purchase orders, deliveries, suppliers, and waste</p>
       </div>
       
       <Tabs defaultValue="ordering" className="w-full">
@@ -26,6 +27,7 @@ const Procurement: React.FC = () => {
           <TabsTrigger value="reorder">Reorder Points</TabsTrigger>
           <TabsTrigger value="matching">Three-Way Matching</TabsTrigger>
           <TabsTrigger value="suppliers">Supplier Performance</TabsTrigger>
+          <TabsTrigger value="waste">Wastage Management</TabsTrigger>
           <TabsTrigger value="stocktake">Stocktake</TabsTrigger>
           <TabsTrigger value="production">Production</TabsTrigger>
         </TabsList>
@@ -46,6 +48,9 @@ const Procurement: React.FC = () => {
         </TabsContent>
         <TabsContent value="suppliers" className="pt-4">
           <SupplierPerformance />
+        </TabsContent>
+        <TabsContent value="waste" className="pt-4">
+          <WastageManagementModule />
         </TabsContent>
         <TabsContent value="stocktake" className="pt-4">
           <StocktakeModule />

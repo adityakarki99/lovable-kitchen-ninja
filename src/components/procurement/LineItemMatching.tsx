@@ -1,435 +1,356 @@
+
 import React, { useState } from 'react';
-import { Check, X, AlertTriangle, Eye, DollarSign, FileText, Edit, Save, Printer } from 'lucide-react';
+import { matchingData } from '@/data/procurementData';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@/components/ui/table';
-import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
-import { Input } from '@/components/ui/input';
-import { Button } from '@/components/ui/button';
-import { Progress } from '@/components/ui/progress';
 import { Badge } from '@/components/ui/badge';
-import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
-import { useToast } from '@/hooks/use-toast';
-import { matchingData, purchaseOrders } from '@/data/procurementData';
+import { Button } from '@/components/ui/button';
+import { Separator } from '@/components/ui/separator';
+import { CheckCircle, AlertTriangle, Info, ArrowRight, DollarSign, Package, FileCheck } from 'lucide-react';
+import { Progress } from '@/components/ui/progress';
 
 const LineItemMatching: React.FC = () => {
-  const [activeTab, setActiveTab] = useState('summary');
-  const [selectedPO, setSelectedPO] = useState(purchaseOrders[0].id);
-  const selectedMatch = matchingData.find(match => match.purchaseOrder.id === selectedPO);
-  const { toast } = useToast();
+  const [selectedMatch, setSelectedMatch] = useState(matchingData.length > 0 ? matchingData[0] : null);
 
-  const getTotalVariance = () => {
-    if (!selectedMatch) return 0;
-    return selectedMatch.discrepancies.reduce((sum, item) => sum + (item.difference || 0), 0);
+  const getStatusBadgeClass = (status: string) => {
+    switch (status) {
+      case 'Matched':
+        return 'bg-kitchen-success text-kitchen-success-foreground';
+      case 'Partial Match':
+        return 'bg-kitchen-warning text-kitchen-warning-foreground';
+      case 'Mismatch':
+        return 'bg-kitchen-danger text-kitchen-danger-foreground';
+      default:
+        return 'bg-kitchen-muted text-kitchen-muted-foreground';
+    }
   };
 
   const getStatusIcon = (status: string) => {
     switch (status) {
-      case 'matched':
-        return <Check className="h-4 w-4 text-kitchen-success" />;
-      case 'quantity-mismatch':
-        return <AlertTriangle className="h-4 w-4 text-kitchen-warning" />;
-      case 'price-mismatch':
-        return <DollarSign className="h-4 w-4 text-kitchen-warning" />;
-      case 'both-mismatch':
-        return <X className="h-4 w-4 text-kitchen-danger" />;
+      case 'Matched':
+        return <CheckCircle className="h-4 w-4 mr-1" />;
+      case 'Partial Match':
+        return <AlertTriangle className="h-4 w-4 mr-1" />;
+      case 'Mismatch':
+        return <Info className="h-4 w-4 mr-1" />;
       default:
         return null;
     }
   };
 
-  const getStatusClass = (status: string) => {
-    switch (status) {
-      case 'matched':
-        return "bg-kitchen-success/10 text-kitchen-success";
-      case 'quantity-mismatch':
-      case 'price-mismatch':
-        return "bg-kitchen-warning/10 text-kitchen-warning";
-      case 'both-mismatch':
-        return "bg-kitchen-danger/10 text-kitchen-danger";
-      default:
-        return "";
-    }
+  const formatCurrency = (amount: number) => {
+    return `$${amount.toFixed(2)}`;
   };
 
-  const getQtyVarianceClass = (variance: number) => {
-    if (variance === 0) return "text-kitchen-success";
-    if (variance < 0) return "text-kitchen-danger";
-    return "text-kitchen-warning";
+  if (!selectedMatch) {
+    return <div>No matching data available</div>;
+  }
+
+  // Calculate total expected from the purchase order
+  const getTotalExpected = (match: any) => {
+    return match.purchaseOrder.items.reduce((total: number, item: any) => total + item.total, 0);
   };
 
-  const getPriceVarianceClass = (variance: number) => {
-    if (variance === 0) return "text-kitchen-success";
-    if (Math.abs(variance) <= 0.05) return "text-kitchen-success"; // 5 cents tolerance
-    return "text-kitchen-warning";
-  };
-
-  const handleAcceptAll = () => {
-    toast({
-      title: "All variances accepted",
-      description: "The invoice has been approved for payment",
-    });
-  };
-
-  const handleGenerateCreditNote = () => {
-    toast({
-      title: "Credit note generated",
-      description: `Credit note for $${Math.abs(getTotalVariance()).toFixed(2)} has been created`,
-    });
-  };
-
-  const handleResolveVariance = (itemId: number) => {
-    // setLineItems(prevItems => 
-    //   prevItems.map(item => 
-    //     item.id === itemId 
-    //       ? { ...item, status: 'matched', qtyVariance: 0, priceVariance: 0, totalVariance: 0 } 
-    //       : item
-    //   )
-    // );
+  // Calculate total received
+  const getTotalReceived = (match: any) => {
+    if (!match.receivingOrder) return 0;
     
-    toast({
-      title: "Variance resolved",
-      description: "Item variance has been manually resolved",
-    });
+    return match.receivingOrder.items.reduce((total: number, item: any) => {
+      const poItem = match.purchaseOrder.items.find((poItem: any) => 
+        poItem.item.id === item.item.id
+      );
+      return total + (poItem ? item.quantityReceived * poItem.price : 0);
+    }, 0);
   };
 
-  const matchedPercent = 100; //(lineItems.filter(item => item.status === 'matched').length / lineItems.length) * 100;
+  // Calculate total invoiced
+  const getTotalInvoiced = (match: any) => {
+    return match.invoice ? match.invoice.total : 0;
+  };
+
+  const totalExpected = getTotalExpected(selectedMatch);
+  const totalReceived = getTotalReceived(selectedMatch);
+  const totalInvoiced = getTotalInvoiced(selectedMatch);
 
   return (
-    <div className="space-y-6">
-      <div className="flex flex-col sm:flex-row gap-4 items-stretch sm:items-center justify-between">
-        <div>
-          <h3 className="text-lg font-medium">Three-Way Matching</h3>
-          <p className="text-kitchen-muted-foreground text-sm">
-            Match purchase orders, receiving orders, and invoices to verify accuracy
-          </p>
-        </div>
-        
-        <div className="flex items-center gap-2">
-          <Select value={selectedPO} onValueChange={setSelectedPO}>
-            <SelectTrigger className="w-[180px]">
-              <SelectValue placeholder="Select PO" />
-            </SelectTrigger>
-            <SelectContent>
-              {purchaseOrders.map(po => (
-                <SelectItem key={po.id} value={po.id}>{po.id}</SelectItem>
-              ))}
-            </SelectContent>
-          </Select>
-          
-          <Button variant="outline" size="sm">
-            <Eye className="mr-2 h-4 w-4" />
-            View Documents
-          </Button>
-          
-          <Button variant="outline" size="sm">
-            <Printer className="mr-2 h-4 w-4" />
-            Print
-          </Button>
-        </div>
-      </div>
-      
+    <div className="grid grid-cols-1 gap-6">
       <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
-        <Card>
-          <CardHeader className="pb-2">
-            <CardTitle className="text-base">Purchase Order</CardTitle>
-          </CardHeader>
-          <CardContent className="pt-0">
-            {selectedMatch ? (
-              <div className="space-y-1">
-                <div className="flex justify-between">
-                  <span className="text-sm text-kitchen-muted-foreground">PO Number:</span>
-                  <span className="text-sm font-medium">{selectedMatch.purchaseOrder.id}</span>
+        {matchingData.map((match) => (
+          <Card 
+            key={match.id} 
+            className={`cursor-pointer hover:border-kitchen-primary transition-colors ${
+              selectedMatch.id === match.id ? 'border-kitchen-primary' : ''
+            }`}
+            onClick={() => setSelectedMatch(match)}
+          >
+            <CardHeader className="pb-2">
+              <div className="flex justify-between items-start">
+                <div>
+                  <p className="text-sm text-kitchen-muted-foreground">Match ID</p>
+                  <CardTitle className="text-lg">{match.id}</CardTitle>
                 </div>
-                <div className="flex justify-between">
-                  <span className="text-sm text-kitchen-muted-foreground">Date Ordered:</span>
-                  <span className="text-sm">{selectedMatch.purchaseOrder.dateOrdered}</span>
+                <Badge className={getStatusBadgeClass(match.status)}>
+                  {getStatusIcon(match.status)}
+                  {match.status}
+                </Badge>
+              </div>
+            </CardHeader>
+            <CardContent>
+              <div className="space-y-4">
+                <div>
+                  <p className="text-sm font-medium mb-1">Match Accuracy</p>
+                  <div className="flex items-center gap-2">
+                    <Progress value={match.matchPercentage} className="h-2" />
+                    <span className="text-sm font-medium">{match.matchPercentage}%</span>
+                  </div>
                 </div>
-                <div className="flex justify-between">
-                  <span className="text-sm text-kitchen-muted-foreground">Expected Delivery:</span>
-                  <span className="text-sm">{selectedMatch.purchaseOrder.dateDelivery}</span>
-                </div>
-                <div className="flex justify-between">
-                  <span className="text-sm text-kitchen-muted-foreground">Payment Terms:</span>
-                  <span className="text-sm">{selectedMatch.purchaseOrder.paymentTerms}</span>
-                </div>
-                <div className="flex justify-between">
-                  <span className="text-sm text-kitchen-muted-foreground">Total:</span>
-                  <span className="text-sm font-medium">${selectedMatch.purchaseOrder.totalExpected.toFixed(2)}</span>
+                
+                <div className="grid grid-cols-3 gap-2 text-sm">
+                  <div>
+                    <p className="text-kitchen-muted-foreground">PO</p>
+                    <p className="font-medium">{match.purchaseOrder.id}</p>
+                  </div>
+                  <div>
+                    <p className="text-kitchen-muted-foreground">Items</p>
+                    <p className="font-medium">{match.purchaseOrder.items.length}</p>
+                  </div>
+                  <div>
+                    <p className="text-kitchen-muted-foreground">Amount</p>
+                    <p className="font-medium">{formatCurrency(getTotalExpected(match))}</p>
+                  </div>
                 </div>
               </div>
-            ) : (
-              <div>No matching data found</div>
-            )}
-          </CardContent>
-        </Card>
-        
-        <Card>
-          <CardHeader className="pb-2">
-            <CardTitle className="text-base">Receiving Order</CardTitle>
-          </CardHeader>
-          <CardContent className="pt-0">
-            {selectedMatch ? (
-              <div className="space-y-1">
-                <div className="flex justify-between">
-                  <span className="text-sm text-kitchen-muted-foreground">RO Number:</span>
-                  <span className="text-sm font-medium">{selectedMatch.receivingOrder.id}</span>
-                </div>
-                <div className="flex justify-between">
-                  <span className="text-sm text-kitchen-muted-foreground">Date Received:</span>
-                  <span className="text-sm">{selectedMatch.receivingOrder.dateReceived}</span>
-                </div>
-                <div className="flex justify-between">
-                  <span className="text-sm text-kitchen-muted-foreground">Received By:</span>
-                  <span className="text-sm">{selectedMatch.receivingOrder.receivedBy}</span>
-                </div>
-                <div className="flex justify-between">
-                  <span className="text-sm text-kitchen-muted-foreground">Condition:</span>
-                  <span className="text-sm">{selectedMatch.receivingOrder.condition}</span>
-                </div>
-                <div className="flex justify-between">
-                  <span className="text-sm text-kitchen-muted-foreground">Notes:</span>
-                  <span className="text-sm">{selectedMatch.receivingOrder.notes}</span>
-                </div>
-              </div>
-            ) : (
-              <div>No matching data found</div>
-            )}
-          </CardContent>
-        </Card>
-        
-        <Card>
-          <CardHeader className="pb-2">
-            <CardTitle className="text-base">Invoice</CardTitle>
-          </CardHeader>
-          <CardContent className="pt-0">
-            {selectedMatch ? (
-              <div className="space-y-1">
-                <div className="flex justify-between">
-                  <span className="text-sm text-kitchen-muted-foreground">Invoice Number:</span>
-                  <span className="text-sm font-medium">{selectedMatch.invoice.id}</span>
-                </div>
-                <div className="flex justify-between">
-                  <span className="text-sm text-kitchen-muted-foreground">Date Issued:</span>
-                  <span className="text-sm">{selectedMatch.invoice.dateIssued}</span>
-                </div>
-                <div className="flex justify-between">
-                  <span className="text-sm text-kitchen-muted-foreground">Date Due:</span>
-                  <span className="text-sm">{selectedMatch.invoice.dateDue}</span>
-                </div>
-                <div className="flex justify-between">
-                  <span className="text-sm text-kitchen-muted-foreground">Supplier Ref:</span>
-                  <span className="text-sm">{selectedMatch.invoice.supplierRef}</span>
-                </div>
-                <div className="flex justify-between">
-                  <span className="text-sm text-kitchen-muted-foreground">Total:</span>
-                  <span className="text-sm font-medium">${selectedMatch.invoice.total.toFixed(2)}</span>
-                </div>
-              </div>
-            ) : (
-              <div>No matching data found</div>
-            )}
-          </CardContent>
-        </Card>
+            </CardContent>
+          </Card>
+        ))}
       </div>
-      
-      <Card>
-        <CardHeader className="pb-2">
-          <div className="flex justify-between items-center">
-            <CardTitle className="text-lg">Matching Status</CardTitle>
-            <div className="flex items-center gap-2">
-              <span className="text-sm font-medium">{matchedPercent.toFixed(0)}% Matched</span>
-              <Progress value={matchedPercent} className="w-24 h-2" />
-            </div>
-          </div>
-          <Tabs value={activeTab} onValueChange={setActiveTab}>
-            <TabsList className="bg-kitchen-muted">
-              <TabsTrigger value="summary">Summary</TabsTrigger>
-              <TabsTrigger value="line-items">Line Items</TabsTrigger>
-              <TabsTrigger value="documents">Documents</TabsTrigger>
-            </TabsList>
-          </Tabs>
-        </CardHeader>
-        <CardContent>
-          <TabsContent value="summary" className="mt-0">
-            <div className="space-y-4">
-              <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-4 gap-4">
-                <Card>
-                  <CardContent className="p-4">
-                    <div className="text-kitchen-muted-foreground mb-1">Total Variance</div>
-                    <div className={`text-xl font-semibold ${getTotalVariance() === 0 ? 'text-kitchen-success' : 'text-kitchen-danger'}`}>
-                      ${getTotalVariance().toFixed(2)}
-                    </div>
-                  </CardContent>
-                </Card>
-                
-                <Card>
-                  <CardContent className="p-4">
-                    <div className="text-kitchen-muted-foreground mb-1">PO Total</div>
-                    <div className="text-xl font-semibold">${selectedMatch?.purchaseOrder.totalExpected.toFixed(2)}</div>
-                  </CardContent>
-                </Card>
-                
-                <Card>
-                  <CardContent className="p-4">
-                    <div className="text-kitchen-muted-foreground mb-1">Invoice Total</div>
-                    <div className="text-xl font-semibold">${selectedMatch?.invoice.total.toFixed(2)}</div>
-                  </CardContent>
-                </Card>
-                
-                <Card>
-                  <CardContent className="p-4">
-                    <div className="text-kitchen-muted-foreground mb-1">Status</div>
-                    <div className="flex items-center">
-                      {matchedPercent === 100 ? (
-                        <Badge className="bg-kitchen-success">Fully Matched</Badge>
-                      ) : matchedPercent >= 80 ? (
-                        <Badge className="bg-kitchen-warning">Partially Matched</Badge>
-                      ) : (
-                        <Badge className="bg-kitchen-danger">Significant Variances</Badge>
-                      )}
-                    </div>
-                  </CardContent>
-                </Card>
-              </div>
-              
+
+      {selectedMatch && (
+        <Card className="mt-6">
+          <CardHeader>
+            <CardTitle>Three-Way Match Details</CardTitle>
+          </CardHeader>
+          <CardContent className="space-y-6">
+            <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
               <Card>
-                <CardHeader className="pb-2">
-                  <CardTitle className="text-base">Variance Summary</CardTitle>
+                <CardHeader className="pb-2 flex flex-row items-center justify-between">
+                  <div>
+                    <p className="text-sm text-kitchen-muted-foreground">Purchase Order</p>
+                    <CardTitle className="text-lg">{selectedMatch.purchaseOrder.id}</CardTitle>
+                  </div>
+                  <FileCheck className="h-5 w-5 text-kitchen-primary" />
                 </CardHeader>
                 <CardContent>
-                  <div className="space-y-3">
-                    {/* {lineItems.filter(item => item.status !== 'matched').map(item => (
-                      <div key={item.id} className="flex justify-between items-center border-b pb-2">
-                        <div>
-                          <div className="font-medium">{item.name}</div>
-                          <div className="text-sm text-kitchen-muted-foreground">
-                            {item.status === 'quantity-mismatch' ? (
-                              <span>Quantity discrepancy: PO {item.poQty} vs. Received {item.roQty}</span>
-                            ) : item.status === 'price-mismatch' ? (
-                              <span>Price discrepancy: PO ${item.poPrice.toFixed(2)} vs. Invoice ${item.invoicePrice.toFixed(2)}</span>
-                            ) : (
-                              <span>Multiple discrepancies found</span>
-                            )}
-                          </div>
-                        </div>
-                        <div className="flex items-center gap-2">
-                          <span className={item.totalVariance < 0 ? 'text-kitchen-danger' : 'text-kitchen-warning'}>
-                            ${item.totalVariance.toFixed(2)}
-                          </span>
-                          <Button size="sm" variant="outline" onClick={() => handleResolveVariance(item.id)}>
-                            Resolve
-                          </Button>
-                        </div>
-                      </div>
-                    ))} */}
-                    
-                    {/* {lineItems.every(item => item.status === 'matched') && (
-                      <div className="flex justify-center items-center py-6 text-kitchen-success">
-                        <Check className="h-5 w-5 mr-2" />
-                        All items matched successfully
-                      </div>
-                    )} */}
+                  <div className="space-y-2">
+                    <div className="flex justify-between text-sm">
+                      <span>Supplier:</span>
+                      <span className="font-medium">{selectedMatch.purchaseOrder.supplier.name}</span>
+                    </div>
+                    <div className="flex justify-between text-sm">
+                      <span>Date Ordered:</span>
+                      <span className="font-medium">{selectedMatch.purchaseOrder.dateOrdered}</span>
+                    </div>
+                    <div className="flex justify-between text-sm">
+                      <span>Expected Delivery:</span>
+                      <span className="font-medium">{selectedMatch.purchaseOrder.dateDelivery}</span>
+                    </div>
+                    <div className="flex justify-between text-sm">
+                      <span>Total:</span>
+                      <span className="font-medium">{formatCurrency(totalExpected)}</span>
+                    </div>
                   </div>
                 </CardContent>
               </Card>
-              
-              <div className="flex flex-col sm:flex-row justify-between gap-4">
-                <div className="flex flex-col sm:flex-row gap-2">
-                  <Button onClick={handleAcceptAll}>
-                    <Check className="mr-2 h-4 w-4" />
-                    Accept All & Approve
-                  </Button>
-                  <Button variant="outline" onClick={handleGenerateCreditNote} disabled={getTotalVariance() >= 0}>
-                    <FileText className="mr-2 h-4 w-4" />
-                    Generate Credit Note
-                  </Button>
-                </div>
-                <div className="flex gap-2">
-                  <Input
-                    placeholder="Add notes for resolution..."
-                    className="w-full sm:w-64"
-                  />
-                  <Button variant="outline">
-                    <Save className="mr-2 h-4 w-4" />
-                    Save
-                  </Button>
-                </div>
-              </div>
-            </div>
-          </TabsContent>
-          
-          <TabsContent value="line-items" className="mt-0">
-            <Table>
-              <TableHeader className="bg-kitchen-muted">
-                <TableRow>
-                  <TableHead className="w-[180px]">Item</TableHead>
-                  <TableHead className="text-center">PO Qty</TableHead>
-                  <TableHead className="text-center">PO Price</TableHead>
-                  <TableHead className="text-center">RO Qty</TableHead>
-                  <TableHead className="text-center">Invoice Qty</TableHead>
-                  <TableHead className="text-center">Invoice Price</TableHead>
-                  <TableHead className="text-center">Qty Variance</TableHead>
-                  <TableHead className="text-center">Price Variance</TableHead>
-                  <TableHead className="text-right">Total Variance</TableHead>
-                  <TableHead className="text-center">Status</TableHead>
-                  <TableHead className="text-right">Actions</TableHead>
-                </TableRow>
-              </TableHeader>
-              <TableBody>
-                {/* {lineItems.map(item => (
-                  <TableRow key={item.id} className="hover:bg-kitchen-muted/30">
-                    <TableCell className="font-medium">{item.name}</TableCell>
-                    <TableCell className="text-center">{item.poQty}</TableCell>
-                    <TableCell className="text-center">${item.poPrice.toFixed(2)}</TableCell>
-                    <TableCell className={`text-center ${item.poQty !== item.roQty ? 'text-kitchen-warning font-medium' : ''}`}>
-                      {item.roQty}
-                    </TableCell>
-                    <TableCell className={`text-center ${item.poQty !== item.invoiceQty ? 'text-kitchen-warning font-medium' : ''}`}>
-                      {item.invoiceQty}
-                    </TableCell>
-                    <TableCell className={`text-center ${item.poPrice !== item.invoicePrice ? 'text-kitchen-warning font-medium' : ''}`}>
-                      ${item.invoicePrice.toFixed(2)}
-                    </TableCell>
-                    <TableCell className={`text-center ${getQtyVarianceClass(item.qtyVariance)}`}>
-                      {item.qtyVariance > 0 ? `+${item.qtyVariance}` : item.qtyVariance}
-                    </TableCell>
-                    <TableCell className={`text-center ${getPriceVarianceClass(item.priceVariance)}`}>
-                      {item.priceVariance === 0 ? '$0.00' : item.priceVariance > 0 ? `+$${item.priceVariance.toFixed(2)}` : `-$${Math.abs(item.priceVariance).toFixed(2)}`}
-                    </TableCell>
-                    <TableCell className={`text-right font-medium ${item.totalVariance === 0 ? 'text-kitchen-success' : item.totalVariance < 0 ? 'text-kitchen-danger' : 'text-kitchen-warning'}`}>
-                      ${item.totalVariance.toFixed(2)}
-                    </TableCell>
-                    <TableCell>
-                      <div className={`pill-badge inline-flex items-center gap-1 justify-center w-full ${getStatusClass(item.status)}`}>
-                        {getStatusIcon(item.status)}
-                        {item.status === 'matched' ? 'Matched' : 'Variance'}
+
+              <Card>
+                <CardHeader className="pb-2 flex flex-row items-center justify-between">
+                  <div>
+                    <p className="text-sm text-kitchen-muted-foreground">Receiving Order</p>
+                    <CardTitle className="text-lg">{selectedMatch.receivingOrder?.id || "N/A"}</CardTitle>
+                  </div>
+                  <Package className="h-5 w-5 text-kitchen-primary" />
+                </CardHeader>
+                <CardContent>
+                  {selectedMatch.receivingOrder ? (
+                    <div className="space-y-2">
+                      <div className="flex justify-between text-sm">
+                        <span>Date Received:</span>
+                        <span className="font-medium">{selectedMatch.receivingOrder.dateReceived}</span>
                       </div>
-                    </TableCell>
-                    <TableCell>
-                      {item.status !== 'matched' && (
-                        <Button size="sm" variant="outline" className="w-full" onClick={() => handleResolveVariance(item.id)}>
-                          <Edit className="h-4 w-4 mr-1" />
-                          Resolve
-                        </Button>
-                      )}
-                    </TableCell>
+                      <div className="flex justify-between text-sm">
+                        <span>Received By:</span>
+                        <span className="font-medium">{selectedMatch.receivingOrder.receivedBy}</span>
+                      </div>
+                      <div className="flex justify-between text-sm">
+                        <span>Condition:</span>
+                        <span className="font-medium">{selectedMatch.receivingOrder.condition}</span>
+                      </div>
+                      <div className="flex justify-between text-sm">
+                        <span>Total Value:</span>
+                        <span className="font-medium">{formatCurrency(totalReceived)}</span>
+                      </div>
+                    </div>
+                  ) : (
+                    <p className="text-kitchen-muted-foreground text-sm">No receiving data available</p>
+                  )}
+                </CardContent>
+              </Card>
+
+              <Card>
+                <CardHeader className="pb-2 flex flex-row items-center justify-between">
+                  <div>
+                    <p className="text-sm text-kitchen-muted-foreground">Invoice</p>
+                    <CardTitle className="text-lg">{selectedMatch.invoice?.id || "N/A"}</CardTitle>
+                  </div>
+                  <DollarSign className="h-5 w-5 text-kitchen-primary" />
+                </CardHeader>
+                <CardContent>
+                  {selectedMatch.invoice ? (
+                    <div className="space-y-2">
+                      <div className="flex justify-between text-sm">
+                        <span>Date Issued:</span>
+                        <span className="font-medium">{selectedMatch.invoice.dateIssued}</span>
+                      </div>
+                      <div className="flex justify-between text-sm">
+                        <span>Date Due:</span>
+                        <span className="font-medium">{selectedMatch.invoice.dateDue}</span>
+                      </div>
+                      <div className="flex justify-between text-sm">
+                        <span>Supplier Ref:</span>
+                        <span className="font-medium">{selectedMatch.invoice.supplierRef}</span>
+                      </div>
+                      <div className="flex justify-between text-sm">
+                        <span>Total Amount:</span>
+                        <span className="font-medium">{formatCurrency(totalInvoiced)}</span>
+                      </div>
+                    </div>
+                  ) : (
+                    <p className="text-kitchen-muted-foreground text-sm">No invoice data available</p>
+                  )}
+                </CardContent>
+              </Card>
+            </div>
+
+            <Separator />
+
+            <div>
+              <h3 className="text-lg font-medium mb-4">Line Item Comparison</h3>
+              <Table>
+                <TableHeader>
+                  <TableRow>
+                    <TableHead>Item</TableHead>
+                    <TableHead className="text-right">PO Quantity</TableHead>
+                    <TableHead className="text-right">Received Quantity</TableHead>
+                    <TableHead className="text-right">Invoiced Quantity</TableHead>
+                    <TableHead className="text-right">Status</TableHead>
                   </TableRow>
-                ))} */}
-              </TableBody>
-            </Table>
-          </TabsContent>
-          
-          <TabsContent value="documents" className="mt-0">
-            <div className="flex justify-center items-center py-10 text-kitchen-muted-foreground">
-              <FileText className="h-10 w-10 mr-3 opacity-40" />
-              <div>
-                <h3 className="text-lg font-medium">Document Viewer</h3>
-                <p>PDF viewer would be loaded here to view original documents</p>
+                </TableHeader>
+                <TableBody>
+                  {selectedMatch.purchaseOrder.items.map((item: any) => {
+                    const receivedItem = selectedMatch.receivingOrder?.items.find(
+                      (ri: any) => ri.item.id === item.item.id
+                    );
+                    
+                    const invoicedItem = selectedMatch.invoice?.items.find(
+                      (ii: any) => ii.item.id === item.item.id
+                    );
+                    
+                    const isMatched = 
+                      item.quantity === (receivedItem?.quantityReceived || 0) && 
+                      item.quantity === (invoicedItem?.quantity || 0);
+                    
+                    const isPartialMatch = 
+                      receivedItem || invoicedItem ? true : false;
+                    
+                    let status = 'Not Processed';
+                    if (isMatched) status = 'Matched';
+                    else if (isPartialMatch) status = 'Partial Match';
+                    
+                    return (
+                      <TableRow key={item.item.id}>
+                        <TableCell className="font-medium">{item.item.name}</TableCell>
+                        <TableCell className="text-right">{item.quantity} {item.item.unit}</TableCell>
+                        <TableCell className="text-right">
+                          {receivedItem ? `${receivedItem.quantityReceived} ${item.item.unit}` : '-'}
+                        </TableCell>
+                        <TableCell className="text-right">
+                          {invoicedItem ? `${invoicedItem.quantity} ${item.item.unit}` : '-'}
+                        </TableCell>
+                        <TableCell className="text-right">
+                          <Badge className={getStatusBadgeClass(status)}>
+                            {status}
+                          </Badge>
+                        </TableCell>
+                      </TableRow>
+                    );
+                  })}
+                </TableBody>
+              </Table>
+            </div>
+
+            {selectedMatch.discrepancies.length > 0 && (
+              <>
+                <Separator />
+                <div>
+                  <h3 className="text-lg font-medium mb-4">Discrepancies</h3>
+                  <Table>
+                    <TableHeader>
+                      <TableRow>
+                        <TableHead>Type</TableHead>
+                        <TableHead>Item</TableHead>
+                        <TableHead className="text-right">Expected</TableHead>
+                        <TableHead className="text-right">Received</TableHead>
+                        <TableHead className="text-right">Difference</TableHead>
+                      </TableRow>
+                    </TableHeader>
+                    <TableBody>
+                      {selectedMatch.discrepancies.map((discrepancy: any, index: number) => (
+                        <TableRow key={index}>
+                          <TableCell>
+                            <Badge variant="outline" className="bg-kitchen-warning/10 text-kitchen-warning border-kitchen-warning">
+                              {discrepancy.type}
+                            </Badge>
+                          </TableCell>
+                          <TableCell className="font-medium">{discrepancy.item.name}</TableCell>
+                          <TableCell className="text-right">{discrepancy.expected}</TableCell>
+                          <TableCell className="text-right">{discrepancy.received}</TableCell>
+                          <TableCell className="text-right text-kitchen-danger">{
+                            discrepancy.difference > 0 
+                              ? `+${formatCurrency(discrepancy.difference)}` 
+                              : formatCurrency(discrepancy.difference)
+                          }</TableCell>
+                        </TableRow>
+                      ))}
+                    </TableBody>
+                  </Table>
+                </div>
+              </>
+            )}
+
+            <div className="flex justify-between items-center mt-6">
+              <div className="space-y-1">
+                <p className="text-sm font-medium">Approval Status: 
+                  <Badge className="ml-2 bg-kitchen-muted text-kitchen-muted-foreground">
+                    {selectedMatch.approvalStatus}
+                  </Badge>
+                </p>
+                <p className="text-sm font-medium">Payment Status:
+                  <Badge className="ml-2 bg-kitchen-muted text-kitchen-muted-foreground">
+                    {selectedMatch.paymentStatus}
+                  </Badge>
+                </p>
+              </div>
+              <div className="space-x-2">
+                <Button variant="outline">Reject</Button>
+                <Button>
+                  Approve
+                  <ArrowRight className="ml-2 h-4 w-4" />
+                </Button>
               </div>
             </div>
-          </TabsContent>
-        </CardContent>
-      </Card>
+          </CardContent>
+        </Card>
+      )}
     </div>
   );
 };

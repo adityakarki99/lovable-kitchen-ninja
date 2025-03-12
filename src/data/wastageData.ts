@@ -1,4 +1,3 @@
-
 // Wastage data types and demo data
 export interface WasteItem {
   id: string;
@@ -287,4 +286,58 @@ export const wasteRecommendations = [
     impact: 'Estimated $200/month savings',
     status: 'New'
   }
+];
+
+// Add the missing exports needed by the components
+
+// wasteTotals - summary metrics for dashboard
+export const wasteTotals = {
+  totalWeight: 38.5,
+  totalValue: 550.25,
+  changePercent: -3.2,
+  incidentCount: 42
+};
+
+// Format waste by category for charts
+export const wasteByCategory = wasteCategories.map(category => ({
+  name: category.name,
+  value: category.value,
+  cost: category.count * 5 // Approximated cost based on count
+}));
+
+// Format waste by item for charts
+export const wasteByItem = wasteItems
+  .reduce((acc: any[], item) => {
+    const existingItem = acc.find(i => i.name === item.itemName);
+    if (existingItem) {
+      existingItem.value += item.quantity;
+      existingItem.cost += item.cost;
+    } else {
+      acc.push({
+        name: item.itemName,
+        value: item.quantity,
+        cost: item.cost,
+        category: item.category,
+        cause: item.reason
+      });
+    }
+    return acc;
+  }, [])
+  .sort((a, b) => b.cost - a.cost);
+
+// Format waste by date for trend charts
+export const wasteByDate = wasteTrends.map(trend => ({
+  date: trend.date,
+  weight: trend.weight,
+  value: trend.value
+}));
+
+// Waste by cause
+export const wasteCauses = [
+  { name: 'Spoilage', value: 12.5, cost: 152.30 },
+  { name: 'Overproduction', value: 15.2, cost: 174.80 },
+  { name: 'Trim Waste', value: 6.8, cost: 87.50 },
+  { name: 'Expired', value: 2.1, cost: 45.20 },
+  { name: 'Quality Issue', value: 3.4, cost: 65.30 },
+  { name: 'Damaged', value: 1.5, cost: 25.15 }
 ];

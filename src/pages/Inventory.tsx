@@ -1,10 +1,11 @@
-
 import React from 'react';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
+import { Routes, Route } from 'react-router-dom';
 import InventoryTable from '@/components/inventory/InventoryTable';
 import RecipeManagement from '@/components/recipe/RecipeManagement';
 import WastageManagementModule from '@/components/wastage/WastageManagementModule';
 import StocktakeModule from '@/components/stocktake/StocktakeModule';
+import StartStocktakeFlow from '@/components/stocktake/StartStocktakeFlow';
 
 const Inventory: React.FC = () => {
   return (
@@ -31,7 +32,10 @@ const Inventory: React.FC = () => {
           <WastageManagementModule />
         </TabsContent>
         <TabsContent value="stocktake" className="pt-4">
-          <StocktakeModule />
+          <Routes>
+            <Route index element={<StocktakeModule />} />
+            <Route path="start" element={<StartStocktakeFlow />} />
+          </Routes>
         </TabsContent>
       </Tabs>
     </div>

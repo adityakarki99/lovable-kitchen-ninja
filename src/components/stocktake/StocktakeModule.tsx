@@ -1,4 +1,5 @@
 import React, { useState } from 'react';
+import { useNavigate } from 'react-router-dom';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
@@ -243,6 +244,7 @@ const ColoredProgress = ({ value, className }: { value: number, className?: stri
 };
 
 const StocktakeModule: React.FC = () => {
+  const navigate = useNavigate();
   const [searchQuery, setSearchQuery] = useState('');
   const [activeTab, setActiveTab] = useState('inventory');
   
@@ -301,6 +303,10 @@ const StocktakeModule: React.FC = () => {
     return diffDays <= 7 && diffDays > 0;
   };
 
+  const handleStartStocktake = () => {
+    navigate('/inventory/stocktake/start');
+  };
+
   return (
     <div className="space-y-6 animate-slide-up">
       <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-4 gap-4">
@@ -341,7 +347,11 @@ const StocktakeModule: React.FC = () => {
             <Barcode className="mr-2 h-4 w-4" />
             Scan Barcode
           </Button>
-          <Button size="sm" className="bg-kitchen-primary hover:bg-kitchen-primary/90">
+          <Button 
+            size="sm" 
+            className="bg-kitchen-primary hover:bg-kitchen-primary/90"
+            onClick={handleStartStocktake}
+          >
             Start Stocktake
           </Button>
         </div>

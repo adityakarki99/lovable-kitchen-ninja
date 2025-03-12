@@ -6,10 +6,9 @@ import SupplierPerformance from '@/components/procurement/SupplierPerformance';
 import ThreeWayMatching from '@/components/procurement/ThreeWayMatching';
 import SupplierOrdering from '@/components/procurement/SupplierOrdering';
 import StocktakeModule from '@/components/stocktake/StocktakeModule';
-import ProductionModule from '@/components/production/ProductionModule';
 import ReorderPointConfiguration from '@/components/procurement/ReorderPointConfiguration';
 import PurchaseOrderApproval from '@/components/procurement/PurchaseOrderApproval';
-import WastageManagementModule from '@/components/wastage/WastageManagementModule';
+import LineItemMatching from '@/components/procurement/LineItemMatching';
 
 const Procurement: React.FC = () => {
   return (
@@ -22,41 +21,70 @@ const Procurement: React.FC = () => {
       <Tabs defaultValue="ordering" className="w-full">
         <TabsList className="bg-kitchen-muted">
           <TabsTrigger value="ordering">Supplier Ordering</TabsTrigger>
-          <TabsTrigger value="orders">Purchase Orders</TabsTrigger>
-          <TabsTrigger value="approval">PO Approval</TabsTrigger>
-          <TabsTrigger value="reorder">Reorder Points</TabsTrigger>
-          <TabsTrigger value="matching">Three-Way Matching</TabsTrigger>
-          <TabsTrigger value="suppliers">Supplier Performance</TabsTrigger>
-          <TabsTrigger value="waste">Wastage Management</TabsTrigger>
-          <TabsTrigger value="stocktake">Stocktake</TabsTrigger>
-          <TabsTrigger value="production">Production</TabsTrigger>
+          <TabsTrigger value="po-approval">PO Approval</TabsTrigger>
+          <TabsTrigger value="suppliers">Suppliers</TabsTrigger>
+          <TabsTrigger value="admin">Admin</TabsTrigger>
         </TabsList>
+
+        {/* Supplier Ordering Tab */}
         <TabsContent value="ordering" className="pt-4">
           <SupplierOrdering />
         </TabsContent>
-        <TabsContent value="orders" className="pt-4">
-          <ProcurementTable />
+
+        {/* PO Approval Tab */}
+        <TabsContent value="po-approval" className="pt-4">
+          <Tabs defaultValue="approval" className="w-full">
+            <TabsList className="bg-kitchen-muted">
+              <TabsTrigger value="approval">PO Approvals</TabsTrigger>
+              <TabsTrigger value="three-way">Three-Way Matching</TabsTrigger>
+              <TabsTrigger value="line-item">Line-Item Matching</TabsTrigger>
+            </TabsList>
+            <TabsContent value="approval" className="pt-4">
+              <PurchaseOrderApproval />
+            </TabsContent>
+            <TabsContent value="three-way" className="pt-4">
+              <ThreeWayMatching />
+            </TabsContent>
+            <TabsContent value="line-item" className="pt-4">
+              <LineItemMatching />
+            </TabsContent>
+          </Tabs>
         </TabsContent>
-        <TabsContent value="approval" className="pt-4">
-          <PurchaseOrderApproval />
-        </TabsContent>
-        <TabsContent value="reorder" className="pt-4">
-          <ReorderPointConfiguration />
-        </TabsContent>
-        <TabsContent value="matching" className="pt-4">
-          <ThreeWayMatching />
-        </TabsContent>
+
+        {/* Suppliers Tab */}
         <TabsContent value="suppliers" className="pt-4">
-          <SupplierPerformance />
+          <Tabs defaultValue="list" className="w-full">
+            <TabsList className="bg-kitchen-muted">
+              <TabsTrigger value="list">Supplier List</TabsTrigger>
+              <TabsTrigger value="performance">Supplier Performance</TabsTrigger>
+            </TabsList>
+            <TabsContent value="list" className="pt-4">
+              <ProcurementTable />
+            </TabsContent>
+            <TabsContent value="performance" className="pt-4">
+              <SupplierPerformance />
+            </TabsContent>
+          </Tabs>
         </TabsContent>
-        <TabsContent value="waste" className="pt-4">
-          <WastageManagementModule />
-        </TabsContent>
-        <TabsContent value="stocktake" className="pt-4">
-          <StocktakeModule />
-        </TabsContent>
-        <TabsContent value="production" className="pt-4">
-          <ProductionModule />
+
+        {/* Admin Tab */}
+        <TabsContent value="admin" className="pt-4">
+          <Tabs defaultValue="reorder" className="w-full">
+            <TabsList className="bg-kitchen-muted">
+              <TabsTrigger value="reorder">Reorder Points</TabsTrigger>
+              <TabsTrigger value="par">PAR Level Alerts</TabsTrigger>
+            </TabsList>
+            <TabsContent value="reorder" className="pt-4">
+              <ReorderPointConfiguration />
+            </TabsContent>
+            <TabsContent value="par" className="pt-4">
+              <div className="space-y-4">
+                <h2 className="text-xl font-semibold">PAR Level Alerts</h2>
+                <p>Configure and manage PAR level alerts for your inventory items.</p>
+                {/* Additional content for PAR Level Alerts */}
+              </div>
+            </TabsContent>
+          </Tabs>
         </TabsContent>
       </Tabs>
     </div>

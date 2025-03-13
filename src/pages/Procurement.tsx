@@ -9,13 +9,16 @@ import StocktakeModule from '@/components/stocktake/StocktakeModule';
 import ReorderPointConfiguration from '@/components/procurement/ReorderPointConfiguration';
 import PurchaseOrderApproval from '@/components/procurement/PurchaseOrderApproval';
 import LineItemMatching from '@/components/procurement/LineItemMatching';
+import SupplierOnboarding from '@/components/procurement/SupplierOnboarding';
+import ComplianceAudits from '@/components/procurement/ComplianceAudits';
+import { suppliers } from '@/data/procurementData';
 
 const Procurement: React.FC = () => {
   return (
     <div className="space-y-8 animate-fade-in pb-12">
       <div>
-        <h1 className="text-3xl font-semibold">Procurement <span className="text-sm bg-kitchen-primary text-white px-2 py-0.5 rounded-full ml-2">2</span></h1>
-        <p className="text-kitchen-muted-foreground mt-1">Manage purchase orders, deliveries, suppliers, and waste</p>
+        <h1 className="text-3xl font-semibold">Procurement <span className="text-sm bg-kitchen-primary text-white px-2 py-0.5 rounded-full ml-2">{suppliers.length}</span></h1>
+        <p className="text-kitchen-muted-foreground mt-1">Manage purchase orders, deliveries, suppliers, and inventory ordering</p>
       </div>
       
       <Tabs defaultValue="ordering" className="w-full">
@@ -23,7 +26,8 @@ const Procurement: React.FC = () => {
           <TabsTrigger value="ordering">Supplier Ordering</TabsTrigger>
           <TabsTrigger value="po-approval">PO Approval</TabsTrigger>
           <TabsTrigger value="suppliers">Suppliers</TabsTrigger>
-          <TabsTrigger value="admin">Admin</TabsTrigger>
+          <TabsTrigger value="inventory">Inventory</TabsTrigger>
+          <TabsTrigger value="compliance">Compliance</TabsTrigger>
         </TabsList>
 
         {/* Supplier Ordering Tab */}
@@ -57,6 +61,7 @@ const Procurement: React.FC = () => {
             <TabsList className="bg-kitchen-muted">
               <TabsTrigger value="list">Supplier List</TabsTrigger>
               <TabsTrigger value="performance">Supplier Performance</TabsTrigger>
+              <TabsTrigger value="onboarding">Supplier Onboarding</TabsTrigger>
             </TabsList>
             <TabsContent value="list" className="pt-4">
               <ProcurementTable />
@@ -64,11 +69,14 @@ const Procurement: React.FC = () => {
             <TabsContent value="performance" className="pt-4">
               <SupplierPerformance />
             </TabsContent>
+            <TabsContent value="onboarding" className="pt-4">
+              <SupplierOnboarding />
+            </TabsContent>
           </Tabs>
         </TabsContent>
 
-        {/* Admin Tab */}
-        <TabsContent value="admin" className="pt-4">
+        {/* Inventory Tab */}
+        <TabsContent value="inventory" className="pt-4">
           <Tabs defaultValue="reorder" className="w-full">
             <TabsList className="bg-kitchen-muted">
               <TabsTrigger value="reorder">Reorder Points</TabsTrigger>
@@ -85,6 +93,11 @@ const Procurement: React.FC = () => {
               </div>
             </TabsContent>
           </Tabs>
+        </TabsContent>
+
+        {/* Compliance Tab */}
+        <TabsContent value="compliance" className="pt-4">
+          <ComplianceAudits />
         </TabsContent>
       </Tabs>
     </div>

@@ -860,3 +860,4 @@ const StocktakeAdvanced: React.FC = () => {
                             <ArrowUpDown className="h-3 w-3 text-kitchen-danger mr-1" />
                             High Variance Items
                           </label>
+                        </div>

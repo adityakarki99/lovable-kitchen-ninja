@@ -1,3 +1,4 @@
+
 import React, { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { Card, CardContent, CardHeader, CardTitle, CardDescription, CardFooter } from '@/components/ui/card';
@@ -861,3 +862,569 @@ const StocktakeAdvanced: React.FC = () => {
                             High Variance Items
                           </label>
                         </div>
+                      </div>
+                    </div>
+                  </CardContent>
+                  <CardFooter>
+                    <Button onClick={handleApplyFilters} className="w-full">
+                      <Filter className="mr-2 h-4 w-4" />
+                      Apply Filters
+                    </Button>
+                  </CardFooter>
+                </Card>
+              </div>
+              
+              {/* Inventory Items (Right Panel) */}
+              <div className="lg:col-span-8">
+                <Card>
+                  <CardHeader className="flex-row items-center justify-between">
+                    <div>
+                      <CardTitle className="text-xl">Inventory Items</CardTitle>
+                      <CardDescription>Items matching your selected filters</CardDescription>
+                    </div>
+                    <div className="flex items-center gap-2">
+                      <div className="relative w-64">
+                        <Search className="absolute left-2 top-2.5 h-4 w-4 text-kitchen-muted-foreground" />
+                        <Input 
+                          placeholder="Search items..." 
+                          className="pl-8"
+                          value={searchQuery}
+                          onChange={(e) => setSearchQuery(e.target.value)}
+                        />
+                      </div>
+                      <Button variant="outline" onClick={handleScanBarcode}>
+                        <Barcode className="h-4 w-4" />
+                      </Button>
+                    </div>
+                  </CardHeader>
+                  <CardContent>
+                    <Table className="border">
+                      <TableHeader className="bg-kitchen-muted">
+                        <TableRow>
+                          <TableHead>Item</TableHead>
+                          <TableHead>Location</TableHead>
+                          <TableHead>Unit</TableHead>
+                          <TableHead>Theoretical Stock</TableHead>
+                          <TableHead>Status</TableHead>
+                        </TableRow>
+                      </TableHeader>
+                      <TableBody>
+                        {filteredItems.length > 0 ? (
+                          filteredItems.map(item => (
+                            <TableRow key={item.id} className="cursor-pointer hover:bg-kitchen-muted transition-colors">
+                              <TableCell>
+                                <div>
+                                  <div className="font-medium">{item.name}</div>
+                                  <div className="text-sm text-kitchen-muted-foreground">{item.category}</div>
+                                </div>
+                              </TableCell>
+                              <TableCell>{item.location}</TableCell>
+                              <TableCell>{item.unit}</TableCell>
+                              <TableCell>{item.theoreticalStock} {item.unit}</TableCell>
+                              <TableCell>
+                                <Badge className={cn("flex items-center gap-1", getStatusClass(item.status))}>
+                                  {getStatusIcon(item.status)} {item.status === 'low' ? 'Low Stock' : item.status === 'expiring' ? 'Expiring Soon' : 'Good'}
+                                </Badge>
+                              </TableCell>
+                            </TableRow>
+                          ))
+                        ) : (
+                          <TableRow>
+                            <TableCell colSpan={5} className="h-24 text-center">
+                              No items match your current filters
+                            </TableCell>
+                          </TableRow>
+                        )}
+                      </TableBody>
+                    </Table>
+                  </CardContent>
+                  <CardFooter className="flex justify-between">
+                    <div className="text-sm text-kitchen-muted-foreground">
+                      {filteredItems.length} items found
+                    </div>
+                    <Button 
+                      onClick={handleStartStocktake} 
+                      disabled={!selectedTemplate}
+                    >
+                      <FileCheck className="mr-2 h-4 w-4" />
+                      Start Stocktake
+                    </Button>
+                  </CardFooter>
+                </Card>
+              </div>
+            </div>
+          )}
+        </TabsContent>
+
+        {/* Active Stocktake Tab */}
+        <TabsContent value="active-stocktake" className="pt-4">
+          <Card>
+            <CardHeader className="flex-row items-center justify-between border-b">
+              <div>
+                <CardTitle className="text-xl">Active Stocktake</CardTitle>
+                <CardDescription>{activeStocktakeData.template} • Started {new Date(activeStocktakeData.startedAt).toLocaleTimeString()}</CardDescription>
+              </div>
+              <div className="flex items-center gap-2">
+                <Button variant="outline" onClick={handleScanBarcode}>
+                  <Scan className="mr-2 h-4 w-4" />
+                  Scan Barcode
+                </Button>
+                <Button onClick={handleCompleteStocktake}>
+                  <Check className="mr-2 h-4 w-4" />
+                  Complete Stocktake
+                </Button>
+              </div>
+            </CardHeader>
+            <CardContent className="pt-6">
+              <div className="grid gap-6">
+                <div className="flex items-center justify-between">
+                  <div>
+                    <h3 className="text-lg font-semibold">Progress</h3>
+                    <p className="text-sm text-kitchen-muted-foreground">
+                      {activeStocktakeData.itemsCounted} of {activeStocktakeData.itemsTotal} items counted
+                    </p>
+                  </div>
+                  <div className="flex items-center gap-6">
+                    <div className="text-center">
+                      <div className="text-2xl font-semibold">{formatCurrency(activeStocktakeData.variance.total)}</div>
+                      <div className="text-sm text-kitchen-muted-foreground">Total Variance</div>
+                    </div>
+                    <div className="text-center">
+                      <div className="text-2xl font-semibold text-kitchen-success">{formatCurrency(activeStocktakeData.variance.positive)}</div>
+                      <div className="text-sm text-kitchen-muted-foreground">Positive</div>
+                    </div>
+                    <div className="text-center">
+                      <div className="text-2xl font-semibold text-kitchen-danger">{formatCurrency(activeStocktakeData.variance.negative)}</div>
+                      <div className="text-sm text-kitchen-muted-foreground">Negative</div>
+                    </div>
+                  </div>
+                </div>
+                
+                <Progress value={activeStocktakeData.progress} indicatorColor="bg-kitchen-primary" className="h-2" />
+                
+                <div className="flex items-center justify-between border-b pb-4">
+                  <div className="flex items-center gap-4">
+                    <div className="font-medium">View:</div>
+                    <button 
+                      onClick={() => setCountView('all')} 
+                      className={cn(
+                        "text-sm transition-colors",
+                        countView === 'all' ? "text-kitchen-primary font-medium" : "text-kitchen-muted-foreground"
+                      )}
+                    >
+                      All Items
+                    </button>
+                    <button 
+                      onClick={() => setCountView('inProgress')} 
+                      className={cn(
+                        "text-sm transition-colors",
+                        countView === 'inProgress' ? "text-kitchen-primary font-medium" : "text-kitchen-muted-foreground"
+                      )}
+                    >
+                      In Progress
+                    </button>
+                    <button 
+                      onClick={() => setCountView('completed')} 
+                      className={cn(
+                        "text-sm transition-colors",
+                        countView === 'completed' ? "text-kitchen-primary font-medium" : "text-kitchen-muted-foreground"
+                      )}
+                    >
+                      Completed
+                    </button>
+                  </div>
+                  <div className="flex items-center space-x-2">
+                    <input 
+                      type="checkbox" 
+                      id="show-completed" 
+                      className="h-4 w-4 rounded border-kitchen-border text-kitchen-primary focus:ring-kitchen-primary"
+                      checked={showCompleted}
+                      onChange={() => setShowCompleted(!showCompleted)}
+                    />
+                    <label htmlFor="show-completed" className="text-sm">Show completed items</label>
+                  </div>
+                </div>
+                
+                <Table className="border">
+                  <TableHeader className="bg-kitchen-muted">
+                    <TableRow>
+                      <TableHead>Item</TableHead>
+                      <TableHead>Location</TableHead>
+                      <TableHead>Theoretical</TableHead>
+                      <TableHead>Last Count</TableHead>
+                      <TableHead>Current Count</TableHead>
+                      <TableHead>Variance</TableHead>
+                    </TableRow>
+                  </TableHeader>
+                  <TableBody>
+                    {inventoryItems.map(item => (
+                      <TableRow key={item.id}>
+                        <TableCell>
+                          <div>
+                            <div className="font-medium">{item.name}</div>
+                            <div className="text-xs text-kitchen-muted-foreground">{item.category}</div>
+                          </div>
+                        </TableCell>
+                        <TableCell>{item.location}</TableCell>
+                        <TableCell>{item.theoreticalStock} {item.unit}</TableCell>
+                        <TableCell>{item.lastCount} {item.unit}</TableCell>
+                        <TableCell>
+                          <Input 
+                            type="number" 
+                            value={item.currentCount}
+                            onChange={(e) => updateCount(item.id, e.target.value)}
+                            className="w-20 text-right"
+                          />
+                        </TableCell>
+                        <TableCell>
+                          <span className={getVarianceClass(item.variance)}>
+                            {item.variance > 0 ? '+' : ''}{item.variance} {item.unit}
+                          </span>
+                        </TableCell>
+                      </TableRow>
+                    ))}
+                  </TableBody>
+                </Table>
+              </div>
+            </CardContent>
+          </Card>
+        </TabsContent>
+
+        {/* Variance Report Tab */}
+        <TabsContent value="variance-report" className="pt-4">
+          <Card>
+            <CardHeader className="flex-row items-center justify-between border-b">
+              <div>
+                <CardTitle className="text-xl">Variance Report</CardTitle>
+                <CardDescription>Stocktake completed on {formatDate(new Date().toISOString())}</CardDescription>
+              </div>
+              <div className="flex items-center gap-2">
+                <Button variant="outline" onClick={() => {}}>
+                  <Share className="mr-2 h-4 w-4" />
+                  Share Report
+                </Button>
+                <Button onClick={handleExportReport}>
+                  {isExporting ? (
+                    <Loader2 className="mr-2 h-4 w-4 animate-spin" />
+                  ) : (
+                    <Download className="mr-2 h-4 w-4" />
+                  )}
+                  Export Report
+                </Button>
+              </div>
+            </CardHeader>
+            <CardContent className="pt-6">
+              <div className="grid gap-6">
+                <div className="grid grid-cols-4 gap-4">
+                  <Card>
+                    <CardContent className="flex flex-col items-center justify-center pt-6">
+                      <div className="text-3xl font-bold">
+                        {formatCurrency(activeStocktakeData.variance.total)}
+                      </div>
+                      <p className="text-sm text-kitchen-muted-foreground mt-2">Total Variance</p>
+                    </CardContent>
+                  </Card>
+                  <Card>
+                    <CardContent className="flex flex-col items-center justify-center pt-6">
+                      <div className="text-3xl font-bold text-kitchen-success">
+                        {formatCurrency(activeStocktakeData.variance.positive)}
+                      </div>
+                      <p className="text-sm text-kitchen-muted-foreground mt-2">Positive Variance</p>
+                    </CardContent>
+                  </Card>
+                  <Card>
+                    <CardContent className="flex flex-col items-center justify-center pt-6">
+                      <div className="text-3xl font-bold text-kitchen-danger">
+                        {formatCurrency(activeStocktakeData.variance.negative)}
+                      </div>
+                      <p className="text-sm text-kitchen-muted-foreground mt-2">Negative Variance</p>
+                    </CardContent>
+                  </Card>
+                  <Card>
+                    <CardContent className="flex flex-col items-center justify-center pt-6">
+                      <div className="text-3xl font-bold">
+                        {activeStocktakeData.itemsTotal}
+                      </div>
+                      <p className="text-sm text-kitchen-muted-foreground mt-2">Items Counted</p>
+                    </CardContent>
+                  </Card>
+                </div>
+                
+                <div>
+                  <h3 className="text-lg font-semibold mb-4">Variance Breakdown</h3>
+                  <Table className="border">
+                    <TableHeader className="bg-kitchen-muted">
+                      <TableRow>
+                        <TableHead>Item</TableHead>
+                        <TableHead>Location</TableHead>
+                        <TableHead>Expected</TableHead>
+                        <TableHead>Actual</TableHead>
+                        <TableHead>Variance (Qty)</TableHead>
+                        <TableHead>Variance ($)</TableHead>
+                      </TableRow>
+                    </TableHeader>
+                    <TableBody>
+                      {inventoryItems
+                        .filter(item => item.variance !== 0)
+                        .sort((a, b) => Math.abs(b.variance) - Math.abs(a.variance))
+                        .map(item => (
+                          <TableRow key={item.id}>
+                            <TableCell>
+                              <div>
+                                <div className="font-medium">{item.name}</div>
+                                <div className="text-xs text-kitchen-muted-foreground">{item.category}</div>
+                              </div>
+                            </TableCell>
+                            <TableCell>{item.location}</TableCell>
+                            <TableCell>{item.theoreticalStock} {item.unit}</TableCell>
+                            <TableCell>{item.actualStock} {item.unit}</TableCell>
+                            <TableCell>
+                              <span className={getVarianceClass(item.variance)}>
+                                {item.variance > 0 ? '+' : ''}{item.variance} {item.unit}
+                              </span>
+                            </TableCell>
+                            <TableCell>
+                              <span className={getVarianceClass(item.variance * item.costPerUnit)}>
+                                {formatCurrency(item.variance * item.costPerUnit)}
+                              </span>
+                            </TableCell>
+                          </TableRow>
+                      ))}
+                    </TableBody>
+                  </Table>
+                </div>
+              </div>
+            </CardContent>
+          </Card>
+        </TabsContent>
+
+        {/* Task Management Tab */}
+        <TabsContent value="task-management" className="pt-4">
+          <Card>
+            <CardHeader>
+              <CardTitle className="text-xl">Task Management</CardTitle>
+              <CardDescription>Assign and track stocktake tasks</CardDescription>
+            </CardHeader>
+            <CardContent>
+              <div className="space-y-6">
+                <div className="flex justify-between items-center">
+                  <h3 className="text-lg font-semibold">Active Tasks</h3>
+                  <Button>
+                    <ListCheck className="mr-2 h-4 w-4" />
+                    Create New Task
+                  </Button>
+                </div>
+                
+                <Table className="border">
+                  <TableHeader className="bg-kitchen-muted">
+                    <TableRow>
+                      <TableHead>Task Name</TableHead>
+                      <TableHead>Assigned To</TableHead>
+                      <TableHead>Location</TableHead>
+                      <TableHead>Due Date</TableHead>
+                      <TableHead>Items</TableHead>
+                      <TableHead>Status</TableHead>
+                      <TableHead>Actions</TableHead>
+                    </TableRow>
+                  </TableHeader>
+                  <TableBody>
+                    {taskAssignments.map(task => (
+                      <TableRow key={task.id}>
+                        <TableCell>
+                          <div className="font-medium">{task.name}</div>
+                        </TableCell>
+                        <TableCell>{task.assignedTo}</TableCell>
+                        <TableCell>{task.location}</TableCell>
+                        <TableCell>{formatDate(task.dueDate)}</TableCell>
+                        <TableCell>{task.itemCount} items</TableCell>
+                        <TableCell>
+                          <Badge className={cn(
+                            task.status === 'in-progress' ? "bg-kitchen-warning/10 text-kitchen-warning" :
+                            task.status === 'completed' ? "bg-kitchen-success/10 text-kitchen-success" :
+                            "bg-kitchen-muted text-kitchen-muted-foreground"
+                          )}>
+                            {task.status === 'in-progress' ? 'In Progress' : 
+                             task.status === 'completed' ? 'Completed' : 'Pending'}
+                          </Badge>
+                        </TableCell>
+                        <TableCell>
+                          <div className="flex items-center gap-2">
+                            <Button variant="outline" size="sm">View</Button>
+                            <Button variant="outline" size="sm">Edit</Button>
+                          </div>
+                        </TableCell>
+                      </TableRow>
+                    ))}
+                  </TableBody>
+                </Table>
+              </div>
+            </CardContent>
+          </Card>
+        </TabsContent>
+
+        {/* History Tab */}
+        <TabsContent value="history" className="pt-4">
+          <Card>
+            <CardHeader>
+              <CardTitle className="text-xl">Stocktake History</CardTitle>
+              <CardDescription>View past stocktakes and their results</CardDescription>
+            </CardHeader>
+            <CardContent>
+              <Table className="border">
+                <TableHeader className="bg-kitchen-muted">
+                  <TableRow>
+                    <TableHead>ID</TableHead>
+                    <TableHead>Date</TableHead>
+                    <TableHead>Template</TableHead>
+                    <TableHead>Completed By</TableHead>
+                    <TableHead>Items</TableHead>
+                    <TableHead>Variance</TableHead>
+                    <TableHead>Actions</TableHead>
+                  </TableRow>
+                </TableHeader>
+                <TableBody>
+                  {stocktakeHistory.map(stocktake => (
+                    <TableRow key={stocktake.id}>
+                      <TableCell>
+                        <div className="font-medium">{stocktake.id}</div>
+                      </TableCell>
+                      <TableCell>{formatDate(stocktake.date)}</TableCell>
+                      <TableCell>{stocktake.template}</TableCell>
+                      <TableCell>{stocktake.completedBy}</TableCell>
+                      <TableCell>{stocktake.itemsTotal} items</TableCell>
+                      <TableCell>
+                        <span className={getVarianceClass(stocktake.variance)}>
+                          {formatCurrency(stocktake.variance)}
+                        </span>
+                      </TableCell>
+                      <TableCell>
+                        <div className="flex items-center gap-2">
+                          <Button variant="outline" size="sm">View</Button>
+                          <Button variant="outline" size="sm">Export</Button>
+                        </div>
+                      </TableCell>
+                    </TableRow>
+                  ))}
+                </TableBody>
+              </Table>
+            </CardContent>
+          </Card>
+        </TabsContent>
+
+        {/* Settings Tab */}
+        <TabsContent value="settings" className="pt-4">
+          <Card>
+            <CardHeader>
+              <CardTitle className="text-xl">Stocktake Settings</CardTitle>
+              <CardDescription>Configure stocktake preferences</CardDescription>
+            </CardHeader>
+            <CardContent className="space-y-6">
+              <div className="space-y-2">
+                <h3 className="text-lg font-semibold">General Settings</h3>
+                <div className="grid grid-cols-2 gap-4">
+                  <div className="space-y-2">
+                    <label className="text-sm font-medium">Default Template</label>
+                    <select className="w-full h-10 rounded-md border border-kitchen-border bg-white px-3 py-2 text-sm">
+                      {stocktakeTemplates.map(template => (
+                        <option key={template.id} value={template.id}>{template.name}</option>
+                      ))}
+                    </select>
+                  </div>
+                  <div className="space-y-2">
+                    <label className="text-sm font-medium">Stocktake Frequency</label>
+                    <select className="w-full h-10 rounded-md border border-kitchen-border bg-white px-3 py-2 text-sm">
+                      <option value="daily">Daily</option>
+                      <option value="weekly">Weekly</option>
+                      <option value="biweekly">Bi-Weekly</option>
+                      <option value="monthly">Monthly</option>
+                    </select>
+                  </div>
+                </div>
+              </div>
+              
+              <div className="space-y-2">
+                <h3 className="text-lg font-semibold">Notification Settings</h3>
+                <div className="space-y-2">
+                  <div className="flex items-center space-x-2">
+                    <input 
+                      type="checkbox" 
+                      id="notify-complete" 
+                      className="h-4 w-4 rounded border-kitchen-border text-kitchen-primary focus:ring-kitchen-primary"
+                    />
+                    <label htmlFor="notify-complete" className="text-sm">
+                      Notify me when stocktake is completed
+                    </label>
+                  </div>
+                  <div className="flex items-center space-x-2">
+                    <input 
+                      type="checkbox" 
+                      id="notify-high-variance" 
+                      className="h-4 w-4 rounded border-kitchen-border text-kitchen-primary focus:ring-kitchen-primary"
+                    />
+                    <label htmlFor="notify-high-variance" className="text-sm">
+                      Notify me about high variance items
+                    </label>
+                  </div>
+                  <div className="flex items-center space-x-2">
+                    <input 
+                      type="checkbox" 
+                      id="notify-task-assigned" 
+                      className="h-4 w-4 rounded border-kitchen-border text-kitchen-primary focus:ring-kitchen-primary"
+                    />
+                    <label htmlFor="notify-task-assigned" className="text-sm">
+                      Notify me when tasks are assigned to me
+                    </label>
+                  </div>
+                </div>
+              </div>
+              
+              <div className="space-y-2">
+                <h3 className="text-lg font-semibold">Export Settings</h3>
+                <div className="space-y-2">
+                  <div className="flex items-center space-x-2">
+                    <input 
+                      type="checkbox" 
+                      id="export-pdf" 
+                      className="h-4 w-4 rounded border-kitchen-border text-kitchen-primary focus:ring-kitchen-primary"
+                    />
+                    <label htmlFor="export-pdf" className="text-sm">
+                      PDF Export
+                    </label>
+                  </div>
+                  <div className="flex items-center space-x-2">
+                    <input 
+                      type="checkbox" 
+                      id="export-csv" 
+                      className="h-4 w-4 rounded border-kitchen-border text-kitchen-primary focus:ring-kitchen-primary"
+                    />
+                    <label htmlFor="export-csv" className="text-sm">
+                      CSV Export
+                    </label>
+                  </div>
+                  <div className="flex items-center space-x-2">
+                    <input 
+                      type="checkbox" 
+                      id="export-auto" 
+                      className="h-4 w-4 rounded border-kitchen-border text-kitchen-primary focus:ring-kitchen-primary"
+                    />
+                    <label htmlFor="export-auto" className="text-sm">
+                      Auto-export after stocktake completion
+                    </label>
+                  </div>
+                </div>
+              </div>
+            </CardContent>
+            <CardFooter>
+              <Button className="w-full">
+                <Settings className="mr-2 h-4 w-4" />
+                Save Settings
+              </Button>
+            </CardFooter>
+          </Card>
+        </TabsContent>
+      </Tabs>
+    </div>
+  );
+};
+
+export default StocktakeAdvanced;

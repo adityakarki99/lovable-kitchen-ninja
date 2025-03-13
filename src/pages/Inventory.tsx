@@ -23,7 +23,6 @@ const Inventory: React.FC = () => {
           <TabsTrigger value="recipes">Recipe Management</TabsTrigger>
           <TabsTrigger value="waste">Waste Management</TabsTrigger>
           <TabsTrigger value="stocktake">Stocktake</TabsTrigger>
-          <TabsTrigger value="stocktake-advanced">Stocktake Advanced</TabsTrigger>
         </TabsList>
         <TabsContent value="inventory" className="pt-4">
           <InventoryTable />
@@ -36,12 +35,9 @@ const Inventory: React.FC = () => {
         </TabsContent>
         <TabsContent value="stocktake" className="pt-4">
           <Routes>
-            <Route index element={<StocktakeModule />} />
+            <Route index element={<StocktakeAdvanced />} />
             <Route path="start" element={<StartStocktakeFlow />} />
           </Routes>
-        </TabsContent>
-        <TabsContent value="stocktake-advanced" className="pt-4">
-          <StocktakeAdvanced />
         </TabsContent>
       </Tabs>
     </div>

@@ -322,7 +322,7 @@ const ColoredProgress = ({ value, className }: { value: number, className?: stri
     <Progress 
       value={value} 
       className={cn("h-2", className)} 
-      indicatorColor={getProgressColor()}
+      indicatorClassName={getProgressColor()}
     />
   );
 };
@@ -916,7 +916,7 @@ const StocktakeModule: React.FC = () => {
                         <p className="text-sm font-medium text-kitchen-muted-foreground">High-Variance Items</p>
                         <h3 className="text-2xl font-bold mt-1">3 items</h3>
                         <p className="text-sm text-kitchen-muted-foreground mt-1">
-                          Items with >10% variance
+                          Items with &gt;10% variance
                         </p>
                       </div>
                       <div className="rounded-full p-2 bg-kitchen-warning/10">
@@ -1093,3 +1093,4 @@ const StocktakeModule: React.FC = () => {
 };
 
 export default StocktakeModule;
+

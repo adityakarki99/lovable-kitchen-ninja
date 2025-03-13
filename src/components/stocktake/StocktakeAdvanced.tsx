@@ -1,4 +1,3 @@
-
 import React, { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { Card, CardContent, CardHeader, CardTitle, CardDescription, CardFooter } from '@/components/ui/card';
@@ -407,106 +406,34 @@ const StocktakeAdvanced: React.FC = () => {
   const toggleFilter = (type: keyof SelectedFilters, id: LocationId | CategoryId | StatusType) => {
     setSelectedFilters(prev => {
       const newFilters = { ...prev };
-      const targetSet = newFilters[type] as Set<typeof id>;
       
-      if (targetSet.has(id)) {
-        targetSet.delete(id);
-      } else {
-        targetSet.add(id);
+      if (type === 'locations') {
+        const locationId = id as LocationId;
+        if (newFilters.locations.has(locationId)) {
+          newFilters.locations.delete(locationId);
+        } else {
+          newFilters.locations.add(locationId);
+        }
+      } 
+      else if (type === 'categories') {
+        const categoryId = id as CategoryId;
+        if (newFilters.categories.has(categoryId)) {
+          newFilters.categories.delete(categoryId);
+        } else {
+          newFilters.categories.add(categoryId);
+        }
+      }
+      else if (type === 'statuses') {
+        const status = id as StatusType;
+        if (newFilters.statuses.has(status)) {
+          newFilters.statuses.delete(status);
+        } else {
+          newFilters.statuses.add(status);
+        }
       }
       
       return newFilters;
     });
-  };
-
-  // Filter functionality
-  const toggleFilterOriginal = (type: 'locations' | 'categories' | 'statuses', id: number | string) => {
-    setSelectedFilters(prev => {
-      const newFilters = { ...prev };
-      if (newFilters[type].has(id as any)) {
-        newFilters[type].delete(id as any);
-      } else {
-        newFilters[type].add(id as any);
-      }
-      return newFilters;
-    });
-  };
-
-  // Apply filters to inventory items
-  const filteredItems = inventoryItems.filter(item => {
-    // Search query filter
-    const matchesSearch = 
-      item.name.toLowerCase().includes(searchQuery.toLowerCase()) ||
-      item.category.toLowerCase().includes(searchQuery.toLowerCase()) ||
-      item.location.toLowerCase().includes(searchQuery.toLowerCase());
-    
-    // Location filter
-    const matchesLocation = selectedFilters.locations.size === 0 || 
-      [...selectedFilters.locations].some(locId => 
-        locationData.find(loc => loc.id === locId)?.name === item.location
-      );
-    
-    // Category filter
-    const matchesCategory = selectedFilters.categories.size === 0 || 
-      [...selectedFilters.categories].some(catId => 
-        categoryData.find(cat => cat.id === catId)?.name === item.category
-      );
-    
-    // Status filter
-    const matchesStatus = selectedFilters.statuses.size === 0 || 
-      selectedFilters.statuses.has(item.status);
-    
-    return matchesSearch && matchesLocation && matchesCategory && matchesStatus;
-  });
-
-  // Utility functions
-  const getStatusIcon = (status: string) => {
-    switch (status) {
-      case 'low':
-        return <AlertTriangle className="h-4 w-4" />;
-      case 'expiring':
-        return <Clock className="h-4 w-4" />;
-      case 'good':
-        return <PackageCheck className="h-4 w-4" />;
-      default:
-        return null;
-    }
-  };
-
-  const getStatusClass = (status: string) => {
-    switch (status) {
-      case 'low':
-        return "bg-kitchen-danger/10 text-kitchen-danger";
-      case 'expiring':
-        return "bg-kitchen-warning/10 text-kitchen-warning";
-      case 'good':
-        return "bg-kitchen-success/10 text-kitchen-success";
-      default:
-        return "";
-    }
-  };
-
-  const getVarianceClass = (variance: number) => {
-    if (variance === 0) return "text-kitchen-success";
-    if (variance > 0) return "text-kitchen-success";
-    return "text-kitchen-danger";
-  };
-
-  const formatDate = (dateString: string) => {
-    const date = new Date(dateString);
-    return date.toLocaleDateString('en-US', { 
-      year: 'numeric', 
-      month: 'short', 
-      day: 'numeric' 
-    });
-  };
-
-  const formatCurrency = (amount: number) => {
-    return new Intl.NumberFormat('en-US', {
-      style: 'currency',
-      currency: 'USD',
-      minimumFractionDigits: 2
-    }).format(amount);
   };
 
   // Handle template selection

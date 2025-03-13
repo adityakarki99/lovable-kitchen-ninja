@@ -1,13 +1,32 @@
+
 import React, { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
-import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
+import { Card, CardContent, CardHeader, CardTitle, CardDescription, CardFooter } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Progress } from '@/components/ui/progress';
 import { Input } from '@/components/ui/input';
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@/components/ui/table';
 import { Badge } from '@/components/ui/badge';
-import { Search, Filter, Barcode, Clipboard, AlertTriangle, Clock, BarChart, PackageCheck, ArrowUpDown } from 'lucide-react';
+import { toast } from 'sonner';
+import { 
+  Search, 
+  Filter, 
+  Barcode, 
+  Clipboard, 
+  AlertTriangle, 
+  Clock, 
+  BarChart, 
+  ArrowUpDown, 
+  PackageCheck,
+  ListCheck,
+  FileCheck,
+  Scan,
+  Save,
+  Download,
+  Settings,
+  ChartBar
+} from 'lucide-react';
 import { cn } from '@/lib/utils';
 
 // Mock inventory data for stocktake
@@ -19,6 +38,8 @@ const inventoryItems = [
     unit: 'kg', 
     theoreticalStock: 10, 
     actualStock: 5, 
+    lastCount: 45,
+    currentCount: 40,
     parLevel: 10, 
     location: 'Main Kitchen',
     expiryDate: '2025-03-15',
@@ -26,7 +47,9 @@ const inventoryItems = [
     supplier: 'Fresh Produce Co.',
     lastStocktake: '2025-03-08',
     status: 'low',
-    variance: -5
+    variance: -5,
+    varianceValue: -12.50,
+    costPerUnit: 2.50
   },
   { 
     id: 2, 
@@ -35,6 +58,8 @@ const inventoryItems = [
     unit: 'kg', 
     theoreticalStock: 15, 
     actualStock: 15, 
+    lastCount: 15,
+    currentCount: 15,
     parLevel: 8, 
     location: 'Cold Storage',
     expiryDate: '2025-03-10',
@@ -42,7 +67,9 @@ const inventoryItems = [
     supplier: 'Premium Meats',
     lastStocktake: '2025-03-08',
     status: 'good',
-    variance: 0
+    variance: 0,
+    varianceValue: 0,
+    costPerUnit: 8.95
   },
   { 
     id: 3, 
@@ -51,6 +78,8 @@ const inventoryItems = [
     unit: 'kg', 
     theoreticalStock: 25, 
     actualStock: 27, 
+    lastCount: 25,
+    currentCount: 27,
     parLevel: 5, 
     location: 'Dry Storage',
     expiryDate: '2025-12-20',
@@ -58,7 +87,9 @@ const inventoryItems = [
     supplier: 'Bakery Supplies Inc.',
     lastStocktake: '2025-03-07',
     status: 'good',
-    variance: 2
+    variance: 2,
+    varianceValue: 2.40,
+    costPerUnit: 1.20
   },
   { 
     id: 4, 
@@ -67,6 +98,8 @@ const inventoryItems = [
     unit: 'liter', 
     theoreticalStock: 4, 
     actualStock: 4, 
+    lastCount: 4,
+    currentCount: 4,
     parLevel: 3, 
     location: 'Dry Storage',
     expiryDate: '2025-10-15',
@@ -74,7 +107,9 @@ const inventoryItems = [
     supplier: 'Global Imports',
     lastStocktake: '2025-03-06',
     status: 'good',
-    variance: 0
+    variance: 0,
+    varianceValue: 0,
+    costPerUnit: 12.95
   },
   { 
     id: 5, 
@@ -83,6 +118,8 @@ const inventoryItems = [
     unit: 'kg', 
     theoreticalStock: 10, 
     actualStock: 2, 
+    lastCount: 10,
+    currentCount: 2,
     parLevel: 5, 
     location: 'Main Kitchen',
     expiryDate: '2025-03-20',
@@ -90,7 +127,9 @@ const inventoryItems = [
     supplier: 'Fresh Produce Co.',
     lastStocktake: '2025-03-08',
     status: 'low',
-    variance: -8
+    variance: -8,
+    varianceValue: -12.00,
+    costPerUnit: 1.50
   },
   { 
     id: 6, 
@@ -99,6 +138,8 @@ const inventoryItems = [
     unit: 'kg', 
     theoreticalStock: 1.5, 
     actualStock: 0.5, 
+    lastCount: 1.5,
+    currentCount: 0.5,
     parLevel: 1, 
     location: 'Main Kitchen',
     expiryDate: '2025-03-12',
@@ -106,7 +147,9 @@ const inventoryItems = [
     supplier: 'Fresh Produce Co.',
     lastStocktake: '2025-03-08',
     status: 'low',
-    variance: -1
+    variance: -1,
+    varianceValue: -5.00,
+    costPerUnit: 5.00
   },
   { 
     id: 7, 
@@ -115,6 +158,8 @@ const inventoryItems = [
     unit: 'kg', 
     theoreticalStock: 6, 
     actualStock: 6, 
+    lastCount: 6,
+    currentCount: 6,
     parLevel: 4, 
     location: 'Cold Storage',
     expiryDate: '2025-03-09',
@@ -122,7 +167,9 @@ const inventoryItems = [
     supplier: 'Seafood Direct',
     lastStocktake: '2025-03-08',
     status: 'expiring',
-    variance: 0
+    variance: 0,
+    varianceValue: 0,
+    costPerUnit: 22.50
   },
   { 
     id: 8, 
@@ -131,6 +178,8 @@ const inventoryItems = [
     unit: 'liter', 
     theoreticalStock: 5, 
     actualStock: 5, 
+    lastCount: 5,
+    currentCount: 5,
     parLevel: 2, 
     location: 'Cold Storage',
     expiryDate: '2025-03-10',
@@ -138,65 +187,100 @@ const inventoryItems = [
     supplier: 'Dairy Delights',
     lastStocktake: '2025-03-08',
     status: 'expiring',
-    variance: 0
+    variance: 0,
+    varianceValue: 0,
+    costPerUnit: 4.75
+  },
+  { 
+    id: 9, 
+    name: 'Fish Fillets', 
+    category: 'Seafood', 
+    unit: 'kg', 
+    theoreticalStock: 8, 
+    actualStock: 5, 
+    lastCount: 8,
+    currentCount: 5,
+    parLevel: 10, 
+    location: 'Freezer',
+    expiryDate: '2025-04-15',
+    batchNumber: 'BT-1010',
+    supplier: 'Seafood Direct',
+    lastStocktake: '2025-03-08',
+    status: 'low',
+    variance: -3,
+    varianceValue: -56.85,
+    costPerUnit: 18.95
   },
 ];
 
-// Mock waste tracking data
-const wasteData = [
-  { 
-    id: 1, 
-    date: '2025-03-08', 
-    itemName: 'Lettuce', 
-    category: 'Vegetables', 
-    quantity: 2, 
-    unit: 'kg', 
-    reason: 'Spoilage', 
-    cost: 8.00, 
-    reportedBy: 'John Smith' 
+// Stocktake templates
+const stocktakeTemplates = [
+  {
+    id: 1,
+    name: 'Full Inventory Count',
+    description: 'Complete count of all inventory items',
+    lastUsed: '2025-03-01',
+    itemCount: 120,
+    type: 'full'
   },
-  { 
-    id: 2, 
-    date: '2025-03-07', 
-    itemName: 'Tomatoes', 
-    category: 'Vegetables', 
-    quantity: 1.5, 
-    unit: 'kg', 
-    reason: 'Overproduction', 
-    cost: 3.75, 
-    reportedBy: 'Emma Johnson' 
+  {
+    id: 2,
+    name: 'PAR Level Check',
+    description: 'Count of items below PAR level',
+    lastUsed: '2025-03-07',
+    itemCount: 15,
+    type: 'par'
   },
-  { 
-    id: 3, 
-    date: '2025-03-06', 
-    itemName: 'Chicken Breast', 
-    category: 'Meat', 
-    quantity: 0.8, 
-    unit: 'kg', 
-    reason: 'Quality Issue', 
-    cost: 7.00, 
-    reportedBy: 'Michael Brown' 
+  {
+    id: 3,
+    name: 'By Location: Fridge Items',
+    description: 'All items in refrigerated storage',
+    lastUsed: '2025-03-05',
+    itemCount: 35,
+    type: 'location'
   },
-  { 
-    id: 4, 
-    date: '2025-03-05', 
-    itemName: 'Milk', 
-    category: 'Dairy', 
-    quantity: 2, 
-    unit: 'liter', 
-    reason: 'Expired', 
-    cost: 5.50, 
-    reportedBy: 'Sarah Davis' 
+  {
+    id: 4,
+    name: 'High Variance Items',
+    description: 'Items with >10% variance in last count',
+    lastUsed: '2025-03-02',
+    itemCount: 8,
+    type: 'variance'
+  },
+  {
+    id: 5,
+    name: 'By Category: Mise en Place',
+    description: 'Prepped items ready for service',
+    lastUsed: '2025-03-08',
+    itemCount: 22,
+    type: 'category'
   },
 ];
 
-// Mock location data
+// Location data for stocktake
 const locationData = [
   { id: 1, name: 'Main Kitchen', items: 18, lowStock: 3, expiring: 1 },
   { id: 2, name: 'Cold Storage', items: 12, lowStock: 0, expiring: 2 },
-  { id: 3, name: 'Dry Storage', items: 25, lowStock: 1, expiring: 0 },
-  { id: 4, name: 'Bar', items: 15, lowStock: 2, expiring: 1 },
+  { id: 3, name: 'Freezer', items: 10, lowStock: 1, expiring: 0 },
+  { id: 4, name: 'Dry Storage', items: 25, lowStock: 1, expiring: 0 },
+  { id: 5, name: 'Prep Area', items: 8, lowStock: 2, expiring: 0 },
 ];
+
+// Mock active stocktake data
+const activeStocktake = {
+  id: 'ST-2025-0308',
+  startedAt: '2025-03-08T09:30:00',
+  template: 'Weekly Full Count',
+  status: 'in-progress',
+  progress: 65,
+  itemsTotal: 120,
+  itemsCounted: 78,
+  variance: {
+    total: -250.20,
+    positive: 85.40,
+    negative: -335.60
+  }
+};
 
 // Stocktake metrics
 const stocktakeMetrics = [
@@ -246,12 +330,20 @@ const ColoredProgress = ({ value, className }: { value: number, className?: stri
 const StocktakeModule: React.FC = () => {
   const navigate = useNavigate();
   const [searchQuery, setSearchQuery] = useState('');
-  const [activeTab, setActiveTab] = useState('inventory');
+  const [activeTab, setActiveTab] = useState('start-stocktake');
+  const [selectedTemplate, setSelectedTemplate] = useState<number | null>(null);
+  const [isCountingActive, setIsCountingActive] = useState(false);
+  const [countView, setCountView] = useState<'all' | 'inProgress' | 'completed'>('all');
+  const [updatedCounts, setUpdatedCounts] = useState<Record<number, number>>({});
+  const [selectedLocation, setSelectedLocation] = useState<number | null>(null);
+  const [isScanning, setIsScanning] = useState(false);
   
   const filteredItems = inventoryItems.filter(item => 
     item.name.toLowerCase().includes(searchQuery.toLowerCase()) ||
     item.category.toLowerCase().includes(searchQuery.toLowerCase()) ||
     item.location.toLowerCase().includes(searchQuery.toLowerCase())
+  ).filter(item => selectedLocation === null || 
+    locationData.find(loc => loc.id === selectedLocation)?.name === item.location
   );
 
   const getStatusIcon = (status: string) => {
@@ -286,6 +378,12 @@ const StocktakeModule: React.FC = () => {
     return "text-kitchen-danger";
   };
 
+  const getVarianceIcon = (variance: number) => {
+    if (variance === 0) return "⚪";
+    if (variance > 0) return "🟢";
+    return "🔴";
+  };
+
   const formatDate = (dateString: string) => {
     const date = new Date(dateString);
     return date.toLocaleDateString('en-US', { 
@@ -304,8 +402,88 @@ const StocktakeModule: React.FC = () => {
   };
 
   const handleStartStocktake = () => {
-    navigate('/inventory/stocktake/start');
+    if (!selectedTemplate) {
+      toast.error("Please select a template first");
+      return;
+    }
+    
+    setIsCountingActive(true);
+    setActiveTab('active-stocktake');
+    
+    toast.success(`Started stocktake using "${stocktakeTemplates.find(t => t.id === selectedTemplate)?.name}" template`);
   };
+
+  const handleTemplateSelect = (templateId: number) => {
+    setSelectedTemplate(templateId);
+    // In a real app, this would fetch the items for this template
+    toast.success(`Template "${stocktakeTemplates.find(t => t.id === templateId)?.name}" selected`);
+  };
+
+  const handleLocationSelect = (locationId: number) => {
+    setSelectedLocation(prev => prev === locationId ? null : locationId);
+  };
+
+  const handleScanBarcode = () => {
+    setIsScanning(true);
+    
+    toast("Barcode scanner activated. Scan an item barcode.", {
+      description: "This is a demo feature. In a real application, this would activate your device's camera.",
+      action: {
+        label: "Cancel",
+        onClick: () => {
+          setIsScanning(false);
+          console.log("Cancelled barcode scanning");
+        },
+      },
+    });
+    
+    // Simulate finding an item by barcode after 2 seconds
+    setTimeout(() => {
+      const randomItemIndex = Math.floor(Math.random() * inventoryItems.length);
+      const item = inventoryItems[randomItemIndex];
+      
+      setIsScanning(false);
+      setSearchQuery(item.name);
+      
+      toast.success(`Found item: ${item.name}`, {
+        description: `Current count: ${item.currentCount} ${item.unit}`,
+      });
+    }, 2000);
+  };
+
+  const handleCountUpdate = (itemId: number, value: string) => {
+    const numValue = parseFloat(value);
+    if (!isNaN(numValue)) {
+      setUpdatedCounts(prev => ({
+        ...prev,
+        [itemId]: numValue
+      }));
+    }
+  };
+
+  const handleCompleteStocktake = () => {
+    toast.success("Stocktake completed successfully!");
+    setIsCountingActive(false);
+    setActiveTab('variance-report');
+  };
+
+  const handleExportReport = () => {
+    toast.success("Exporting stocktake report...");
+    setTimeout(() => {
+      toast.success("Report exported successfully");
+    }, 1500);
+  };
+  
+  const calculateTotalVariance = () => {
+    return filteredItems.reduce((total, item) => {
+      const updatedCount = updatedCounts[item.id] !== undefined ? updatedCounts[item.id] : item.currentCount;
+      const variance = updatedCount - item.lastCount;
+      const varianceValue = variance * item.costPerUnit;
+      return total + varianceValue;
+    }, 0);
+  };
+
+  const totalVarianceValue = calculateTotalVariance();
 
   return (
     <div className="space-y-6 animate-slide-up">
@@ -328,42 +506,532 @@ const StocktakeModule: React.FC = () => {
         ))}
       </div>
 
-      <div className="flex flex-col sm:flex-row gap-4 items-stretch sm:items-center justify-between">
-        <div className="relative w-full sm:w-72 lg:w-96">
-          <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-kitchen-muted-foreground" />
-          <Input
-            placeholder="Search inventory..."
-            className="pl-9 bg-white border-kitchen-border"
-            value={searchQuery}
-            onChange={(e) => setSearchQuery(e.target.value)}
-          />
-        </div>
-        <div className="flex items-center gap-2">
-          <Button variant="outline" size="sm" className="text-kitchen-foreground">
-            <Filter className="mr-2 h-4 w-4" />
-            Filter
-          </Button>
-          <Button variant="outline" size="sm" className="text-kitchen-foreground">
-            <Barcode className="mr-2 h-4 w-4" />
-            Scan Barcode
-          </Button>
-          <Button 
-            size="sm" 
-            className="bg-kitchen-primary hover:bg-kitchen-primary/90"
-            onClick={handleStartStocktake}
-          >
-            Start Stocktake
-          </Button>
-        </div>
-      </div>
-      
       <Tabs value={activeTab} onValueChange={setActiveTab} className="w-full">
         <TabsList className="bg-kitchen-muted">
+          <TabsTrigger value="start-stocktake">Start Stocktake</TabsTrigger>
+          <TabsTrigger value="active-stocktake">Active Stocktake</TabsTrigger>
+          <TabsTrigger value="variance-report">Variance Report</TabsTrigger>
           <TabsTrigger value="inventory">Current Inventory</TabsTrigger>
-          <TabsTrigger value="waste">Waste Tracking</TabsTrigger>
-          <TabsTrigger value="locations">Locations</TabsTrigger>
-          <TabsTrigger value="variance">Variance Report</TabsTrigger>
         </TabsList>
+        
+        {/* Start Stocktake Tab */}
+        <TabsContent value="start-stocktake" className="pt-4">
+          <div className="grid grid-cols-1 lg:grid-cols-12 gap-6">
+            {/* Template Selection (Left Panel) */}
+            <div className="lg:col-span-4 space-y-6">
+              <Card>
+                <CardHeader>
+                  <CardTitle className="text-xl">Stocktake Templates</CardTitle>
+                  <CardDescription>Select a template to begin your stocktake</CardDescription>
+                </CardHeader>
+                <CardContent className="space-y-4">
+                  {stocktakeTemplates.map(template => (
+                    <div 
+                      key={template.id}
+                      className={cn(
+                        "p-4 border rounded-md cursor-pointer transition-all",
+                        selectedTemplate === template.id 
+                          ? "border-kitchen-primary bg-kitchen-primary/5" 
+                          : "border-kitchen-border hover:border-kitchen-primary/50"
+                      )}
+                      onClick={() => handleTemplateSelect(template.id)}
+                    >
+                      <div className="flex justify-between items-start">
+                        <div>
+                          <h3 className="font-medium">{template.name}</h3>
+                          <p className="text-sm text-kitchen-muted-foreground mt-1">{template.description}</p>
+                          <div className="flex items-center gap-2 mt-2">
+                            <Badge variant="outline" className="text-xs">
+                              {template.itemCount} items
+                            </Badge>
+                            <span className="text-xs text-kitchen-muted-foreground">
+                              Last used: {formatDate(template.lastUsed)}
+                            </span>
+                          </div>
+                        </div>
+                        <Badge 
+                          className={cn(
+                            template.type === 'full' ? "bg-kitchen-primary/10 text-kitchen-primary" :
+                            template.type === 'par' ? "bg-kitchen-warning/10 text-kitchen-warning" :
+                            template.type === 'variance' ? "bg-kitchen-danger/10 text-kitchen-danger" :
+                            "bg-kitchen-muted text-kitchen-muted-foreground"
+                          )}
+                        >
+                          {template.type === 'full' ? "Full Count" :
+                           template.type === 'par' ? "PAR Based" :
+                           template.type === 'variance' ? "Variance" :
+                           template.type === 'location' ? "Location" :
+                           "Category"}
+                        </Badge>
+                      </div>
+                    </div>
+                  ))}
+                </CardContent>
+                <CardFooter className="flex justify-between">
+                  <Button variant="outline" className="w-full">
+                    Create New Template
+                  </Button>
+                </CardFooter>
+              </Card>
+              
+              <Card>
+                <CardHeader>
+                  <CardTitle className="text-xl">Filter By Location</CardTitle>
+                </CardHeader>
+                <CardContent className="space-y-4">
+                  {locationData.map(location => (
+                    <div 
+                      key={location.id}
+                      className={cn(
+                        "p-3 border rounded-md cursor-pointer transition-all",
+                        selectedLocation === location.id 
+                          ? "border-kitchen-primary bg-kitchen-primary/5" 
+                          : "border-kitchen-border hover:border-kitchen-primary/50"
+                      )}
+                      onClick={() => handleLocationSelect(location.id)}
+                    >
+                      <div className="flex justify-between items-center">
+                        <div>
+                          <h3 className="font-medium">{location.name}</h3>
+                          <p className="text-sm text-kitchen-muted-foreground">{location.items} items</p>
+                        </div>
+                        <div className="flex items-center gap-2">
+                          {location.lowStock > 0 && (
+                            <Badge className="bg-kitchen-danger/10 text-kitchen-danger">
+                              {location.lowStock} Low
+                            </Badge>
+                          )}
+                          {location.expiring > 0 && (
+                            <Badge className="bg-kitchen-warning/10 text-kitchen-warning">
+                              {location.expiring} Expiring
+                            </Badge>
+                          )}
+                        </div>
+                      </div>
+                    </div>
+                  ))}
+                </CardContent>
+              </Card>
+            </div>
+            
+            {/* Preview Panel (Right Panel) */}
+            <div className="lg:col-span-8">
+              <Card>
+                <CardHeader className="flex flex-row items-center justify-between">
+                  <div>
+                    <CardTitle className="text-xl">Template Preview</CardTitle>
+                    <CardDescription>
+                      {selectedTemplate 
+                        ? `Preview items in "${stocktakeTemplates.find(t => t.id === selectedTemplate)?.name}" template` 
+                        : "Select a template to preview items"}
+                    </CardDescription>
+                  </div>
+                  <div className="flex items-center gap-2">
+                    <Button
+                      variant="outline"
+                      size="sm"
+                      onClick={handleScanBarcode}
+                      className="flex items-center gap-1"
+                    >
+                      <Barcode className="h-4 w-4" />
+                      <span>Scan</span>
+                    </Button>
+                    <Button
+                      onClick={handleStartStocktake}
+                      size="sm"
+                      disabled={!selectedTemplate}
+                      className="bg-kitchen-primary hover:bg-kitchen-primary/90"
+                    >
+                      Start Stocktake
+                    </Button>
+                  </div>
+                </CardHeader>
+                <CardContent>
+                  <div className="relative w-full mb-4">
+                    <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-kitchen-muted-foreground" />
+                    <Input
+                      placeholder="Search items..."
+                      className="pl-9 bg-white border-kitchen-border"
+                      value={searchQuery}
+                      onChange={(e) => setSearchQuery(e.target.value)}
+                    />
+                  </div>
+                  
+                  <div className="rounded-md border">
+                    <Table>
+                      <TableHeader className="bg-kitchen-muted">
+                        <TableRow>
+                          <TableHead className="font-medium">Item Name</TableHead>
+                          <TableHead className="font-medium">Category</TableHead>
+                          <TableHead className="font-medium">Location</TableHead>
+                          <TableHead className="font-medium text-right">Last Count</TableHead>
+                          <TableHead className="font-medium text-right">PAR Level</TableHead>
+                          <TableHead className="font-medium">Status</TableHead>
+                        </TableRow>
+                      </TableHeader>
+                      <TableBody>
+                        {filteredItems.map((item) => (
+                          <TableRow key={item.id} className="hover:bg-kitchen-muted/30">
+                            <TableCell className="font-medium">{item.name}</TableCell>
+                            <TableCell>{item.category}</TableCell>
+                            <TableCell>{item.location}</TableCell>
+                            <TableCell className="text-right">{item.lastCount} {item.unit}</TableCell>
+                            <TableCell className="text-right">{item.parLevel} {item.unit}</TableCell>
+                            <TableCell>
+                              <span className={cn(
+                                "pill-badge inline-flex items-center",
+                                getStatusClass(item.status)
+                              )}>
+                                {getStatusIcon(item.status)}
+                                {item.status === 'low' ? (
+                                  <span className="ml-1">Low Stock</span>
+                                ) : item.status === 'expiring' ? (
+                                  <span className="ml-1">Expiring Soon</span>
+                                ) : (
+                                  <span className="ml-1">Good</span>
+                                )}
+                              </span>
+                            </TableCell>
+                          </TableRow>
+                        ))}
+                      </TableBody>
+                    </Table>
+                  </div>
+                </CardContent>
+              </Card>
+            </div>
+          </div>
+        </TabsContent>
+        
+        {/* Active Stocktake Tab */}
+        <TabsContent value="active-stocktake" className="pt-4">
+          <Card>
+            <CardHeader className="flex flex-row items-center justify-between">
+              <div>
+                <CardTitle className="text-xl">
+                  {isCountingActive ? "Active Stocktake in Progress" : "No Active Stocktake"}
+                </CardTitle>
+                {isCountingActive && (
+                  <CardDescription>
+                    Template: {stocktakeTemplates.find(t => t.id === selectedTemplate)?.name} 
+                    | Started: {new Date().toLocaleTimeString()}
+                  </CardDescription>
+                )}
+              </div>
+              <div className="flex items-center gap-2">
+                {isCountingActive && (
+                  <>
+                    <Button
+                      variant="outline"
+                      size="sm"
+                      onClick={handleScanBarcode}
+                      className={cn(
+                        "flex items-center gap-1",
+                        isScanning && "bg-kitchen-primary/10"
+                      )}
+                    >
+                      <Barcode className="h-4 w-4" />
+                      <span>{isScanning ? "Scanning..." : "Scan Items"}</span>
+                    </Button>
+                    <Button
+                      onClick={handleCompleteStocktake}
+                      size="sm"
+                      className="bg-kitchen-primary hover:bg-kitchen-primary/90"
+                    >
+                      Complete Stocktake
+                    </Button>
+                  </>
+                )}
+                {!isCountingActive && (
+                  <Button
+                    onClick={() => setActiveTab('start-stocktake')}
+                    size="sm"
+                    className="bg-kitchen-primary hover:bg-kitchen-primary/90"
+                  >
+                    Start New Stocktake
+                  </Button>
+                )}
+              </div>
+            </CardHeader>
+            <CardContent>
+              {isCountingActive ? (
+                <>
+                  <div className="flex justify-between items-center mb-4">
+                    <div className="flex items-center gap-4">
+                      <div className="flex flex-col">
+                        <span className="text-sm text-kitchen-muted-foreground">Items Counted</span>
+                        <span className="text-lg font-medium">{filteredItems.length} items</span>
+                      </div>
+                      <div className="flex flex-col">
+                        <span className="text-sm text-kitchen-muted-foreground">Current Variance</span>
+                        <span className={cn(
+                          "text-lg font-medium",
+                          totalVarianceValue < 0 ? "text-kitchen-danger" : "text-kitchen-success"
+                        )}>
+                          ${Math.abs(totalVarianceValue).toFixed(2)}
+                          {totalVarianceValue < 0 ? " deficit" : totalVarianceValue > 0 ? " surplus" : ""}
+                        </span>
+                      </div>
+                    </div>
+                    <div className="relative w-72">
+                      <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-kitchen-muted-foreground" />
+                      <Input
+                        placeholder="Search items..."
+                        className="pl-9 bg-white border-kitchen-border"
+                        value={searchQuery}
+                        onChange={(e) => setSearchQuery(e.target.value)}
+                      />
+                    </div>
+                  </div>
+                  
+                  <div className="rounded-md border">
+                    <Table>
+                      <TableHeader className="bg-kitchen-muted">
+                        <TableRow>
+                          <TableHead className="font-medium">Item Name</TableHead>
+                          <TableHead className="font-medium">Category</TableHead>
+                          <TableHead className="font-medium">Location</TableHead>
+                          <TableHead className="font-medium text-right">PAR Level</TableHead>
+                          <TableHead className="font-medium text-right">Last Count</TableHead>
+                          <TableHead className="font-medium text-right">Current Count</TableHead>
+                          <TableHead className="font-medium text-right">Variance</TableHead>
+                        </TableRow>
+                      </TableHeader>
+                      <TableBody>
+                        {filteredItems.map((item) => {
+                          const currentCount = updatedCounts[item.id] !== undefined 
+                            ? updatedCounts[item.id] 
+                            : item.currentCount;
+                          const variance = currentCount - item.lastCount;
+                          
+                          return (
+                            <TableRow key={item.id} className="hover:bg-kitchen-muted/30">
+                              <TableCell className="font-medium">{item.name}</TableCell>
+                              <TableCell>{item.category}</TableCell>
+                              <TableCell>{item.location}</TableCell>
+                              <TableCell className="text-right">{item.parLevel} {item.unit}</TableCell>
+                              <TableCell className="text-right">{item.lastCount} {item.unit}</TableCell>
+                              <TableCell className="text-right">
+                                <Input
+                                  type="number"
+                                  className="w-20 text-right inline-block"
+                                  value={currentCount}
+                                  onChange={(e) => handleCountUpdate(item.id, e.target.value)}
+                                />
+                                <span className="ml-1">{item.unit}</span>
+                              </TableCell>
+                              <TableCell className={cn(
+                                "text-right font-medium",
+                                variance < 0 ? "text-kitchen-danger" : 
+                                variance > 0 ? "text-kitchen-success" : ""
+                              )}>
+                                <span className="mr-1">{getVarianceIcon(variance)}</span>
+                                {variance > 0 ? "+" : ""}{variance} {item.unit}
+                              </TableCell>
+                            </TableRow>
+                          );
+                        })}
+                      </TableBody>
+                    </Table>
+                  </div>
+                </>
+              ) : (
+                <div className="text-center py-12">
+                  <div className="mx-auto w-24 h-24 rounded-full bg-kitchen-muted flex items-center justify-center mb-4">
+                    <ListCheck className="h-12 w-12 text-kitchen-muted-foreground" />
+                  </div>
+                  <h3 className="text-xl font-medium mb-2">No Active Stocktake</h3>
+                  <p className="text-kitchen-muted-foreground mb-6">
+                    Start a new stocktake to count and verify your inventory.
+                  </p>
+                  <Button 
+                    onClick={() => setActiveTab('start-stocktake')}
+                    className="bg-kitchen-primary hover:bg-kitchen-primary/90"
+                  >
+                    Start New Stocktake
+                  </Button>
+                </div>
+              )}
+            </CardContent>
+          </Card>
+        </TabsContent>
+        
+        {/* Variance Report Tab */}
+        <TabsContent value="variance-report" className="pt-4">
+          <Card>
+            <CardHeader className="flex flex-row items-center justify-between">
+              <div>
+                <CardTitle className="text-xl">Variance Report</CardTitle>
+                <CardDescription>
+                  Analysis of inventory discrepancies from the latest stocktake
+                </CardDescription>
+              </div>
+              <div className="flex items-center gap-2">
+                <Button
+                  variant="outline"
+                  size="sm"
+                  onClick={handleExportReport}
+                  className="flex items-center gap-1"
+                >
+                  <Download className="h-4 w-4" />
+                  <span>Export Report</span>
+                </Button>
+              </div>
+            </CardHeader>
+            <CardContent>
+              <div className="grid grid-cols-1 md:grid-cols-3 gap-4 mb-6">
+                <Card>
+                  <CardContent className="pt-6">
+                    <div className="flex justify-between items-start">
+                      <div>
+                        <p className="text-sm font-medium text-kitchen-muted-foreground">Total Variance</p>
+                        <h3 className={cn(
+                          "text-2xl font-bold mt-1",
+                          totalVarianceValue < 0 ? "text-kitchen-danger" : "text-kitchen-success"
+                        )}>
+                          ${Math.abs(totalVarianceValue).toFixed(2)}
+                          {totalVarianceValue < 0 ? " deficit" : totalVarianceValue > 0 ? " surplus" : ""}
+                        </h3>
+                        <p className="text-sm text-kitchen-muted-foreground mt-1">
+                          {Math.abs(totalVarianceValue / 12500 * 100).toFixed(2)}% of inventory value
+                        </p>
+                      </div>
+                      <div className={cn(
+                        "rounded-full p-2",
+                        totalVarianceValue < 0 ? "bg-kitchen-danger/10" : "bg-kitchen-success/10"
+                      )}>
+                        <ArrowUpDown className={cn(
+                          "h-5 w-5",
+                          totalVarianceValue < 0 ? "text-kitchen-danger" : "text-kitchen-success"
+                        )} />
+                      </div>
+                    </div>
+                  </CardContent>
+                </Card>
+                
+                <Card>
+                  <CardContent className="pt-6">
+                    <div className="flex justify-between items-start">
+                      <div>
+                        <p className="text-sm font-medium text-kitchen-muted-foreground">High-Variance Items</p>
+                        <h3 className="text-2xl font-bold mt-1">3 items</h3>
+                        <p className="text-sm text-kitchen-muted-foreground mt-1">
+                          Items with >10% variance
+                        </p>
+                      </div>
+                      <div className="rounded-full p-2 bg-kitchen-warning/10">
+                        <AlertTriangle className="h-5 w-5 text-kitchen-warning" />
+                      </div>
+                    </div>
+                  </CardContent>
+                </Card>
+                
+                <Card>
+                  <CardContent className="pt-6">
+                    <div className="flex justify-between items-start">
+                      <div>
+                        <p className="text-sm font-medium text-kitchen-muted-foreground">Most Affected Category</p>
+                        <h3 className="text-2xl font-bold mt-1">Vegetables</h3>
+                        <p className="text-sm text-kitchen-muted-foreground mt-1">
+                          $29.50 total variance
+                        </p>
+                      </div>
+                      <div className="rounded-full p-2 bg-kitchen-muted">
+                        <BarChart className="h-5 w-5 text-kitchen-muted-foreground" />
+                      </div>
+                    </div>
+                  </CardContent>
+                </Card>
+              </div>
+              
+              <div className="rounded-md border">
+                <Table>
+                  <TableHeader className="bg-kitchen-muted">
+                    <TableRow>
+                      <TableHead className="font-medium">Item Name</TableHead>
+                      <TableHead className="font-medium">Category</TableHead>
+                      <TableHead className="font-medium">Location</TableHead>
+                      <TableHead className="font-medium text-right">Last Count</TableHead>
+                      <TableHead className="font-medium text-right">Current Count</TableHead>
+                      <TableHead className="font-medium text-right">Unit Cost</TableHead>
+                      <TableHead className="font-medium text-right">Variance (Units)</TableHead>
+                      <TableHead className="font-medium text-right">Variance (Value)</TableHead>
+                    </TableRow>
+                  </TableHeader>
+                  <TableBody>
+                    {filteredItems
+                      .sort((a, b) => {
+                        const aCurrentCount = updatedCounts[a.id] !== undefined ? updatedCounts[a.id] : a.currentCount;
+                        const bCurrentCount = updatedCounts[b.id] !== undefined ? updatedCounts[b.id] : b.currentCount;
+                        
+                        const aVariance = Math.abs(aCurrentCount - a.lastCount);
+                        const bVariance = Math.abs(bCurrentCount - b.lastCount);
+                        
+                        return bVariance - aVariance;
+                      })
+                      .map((item) => {
+                        const currentCount = updatedCounts[item.id] !== undefined 
+                          ? updatedCounts[item.id] 
+                          : item.currentCount;
+                        const variance = currentCount - item.lastCount;
+                        const varianceValue = variance * item.costPerUnit;
+                        
+                        return (
+                          <TableRow key={item.id} className="hover:bg-kitchen-muted/30">
+                            <TableCell className="font-medium">{item.name}</TableCell>
+                            <TableCell>{item.category}</TableCell>
+                            <TableCell>{item.location}</TableCell>
+                            <TableCell className="text-right">{item.lastCount} {item.unit}</TableCell>
+                            <TableCell className="text-right">{currentCount} {item.unit}</TableCell>
+                            <TableCell className="text-right">${item.costPerUnit.toFixed(2)}</TableCell>
+                            <TableCell className={cn(
+                              "text-right font-medium",
+                              variance < 0 ? "text-kitchen-danger" : 
+                              variance > 0 ? "text-kitchen-success" : ""
+                            )}>
+                              <span className="mr-1">{getVarianceIcon(variance)}</span>
+                              {variance > 0 ? "+" : ""}{variance} {item.unit}
+                            </TableCell>
+                            <TableCell className={cn(
+                              "text-right font-medium",
+                              varianceValue < 0 ? "text-kitchen-danger" : 
+                              varianceValue > 0 ? "text-kitchen-success" : ""
+                            )}>
+                              {varianceValue > 0 ? "+" : ""}${varianceValue.toFixed(2)}
+                            </TableCell>
+                          </TableRow>
+                        );
+                      })}
+                  </TableBody>
+                </Table>
+              </div>
+              
+              <div className="mt-6 bg-kitchen-muted/30 p-4 rounded-md">
+                <h3 className="font-medium mb-3">Recommendations</h3>
+                <ul className="space-y-2">
+                  <li className="flex items-start gap-2">
+                    <AlertTriangle className="h-5 w-5 text-kitchen-warning mt-0.5" />
+                    <div>
+                      <p className="font-medium">High variance for Tomatoes (-5kg)</p>
+                      <p className="text-sm text-kitchen-muted-foreground">
+                        Check for spoilage in Main Kitchen storage and update waste tracking.
+                      </p>
+                    </div>
+                  </li>
+                  <li className="flex items-start gap-2">
+                    <AlertTriangle className="h-5 w-5 text-kitchen-danger mt-0.5" />
+                    <div>
+                      <p className="font-medium">Low stock for Fish Fillets (5kg vs PAR 10kg)</p>
+                      <p className="text-sm text-kitchen-muted-foreground">
+                        Generate purchase order for Fish Fillets to meet upcoming production needs.
+                      </p>
+                    </div>
+                  </li>
+                </ul>
+              </div>
+            </CardContent>
+          </Card>
+        </TabsContent>
         
         {/* Current Inventory Tab */}
         <TabsContent value="inventory" className="pt-4">
@@ -374,10 +1042,10 @@ const StocktakeModule: React.FC = () => {
                   <TableHead className="font-medium">Item Name</TableHead>
                   <TableHead className="font-medium">Category</TableHead>
                   <TableHead className="font-medium">Location</TableHead>
-                  <TableHead className="font-medium text-right">Actual Stock</TableHead>
+                  <TableHead className="font-medium text-right">Current Stock</TableHead>
                   <TableHead className="font-medium text-right">PAR Level</TableHead>
+                  <TableHead className="font-medium">Batch #</TableHead>
                   <TableHead className="font-medium">Expiry Date</TableHead>
-                  <TableHead className="font-medium">Last Stocktake</TableHead>
                   <TableHead className="font-medium text-right">Status</TableHead>
                 </TableRow>
               </TableHeader>
@@ -387,8 +1055,9 @@ const StocktakeModule: React.FC = () => {
                     <TableCell className="font-medium">{item.name}</TableCell>
                     <TableCell>{item.category}</TableCell>
                     <TableCell>{item.location}</TableCell>
-                    <TableCell className="text-right">{item.actualStock} {item.unit}</TableCell>
+                    <TableCell className="text-right">{item.currentCount} {item.unit}</TableCell>
                     <TableCell className="text-right">{item.parLevel} {item.unit}</TableCell>
+                    <TableCell>{item.batchNumber}</TableCell>
                     <TableCell>
                       <span className={cn(
                         isExpiringSoon(item.expiryDate) ? "text-kitchen-warning font-medium" : ""
@@ -397,7 +1066,6 @@ const StocktakeModule: React.FC = () => {
                         {isExpiringSoon(item.expiryDate) && " (Soon)"}
                       </span>
                     </TableCell>
-                    <TableCell>{formatDate(item.lastStocktake)}</TableCell>
                     <TableCell className="text-right">
                       <span className={cn(
                         "pill-badge inline-flex items-center",
@@ -417,154 +1085,6 @@ const StocktakeModule: React.FC = () => {
                 ))}
               </TableBody>
             </Table>
-          </Card>
-        </TabsContent>
-        
-        {/* Waste Tracking Tab */}
-        <TabsContent value="waste" className="pt-4">
-          <Card className="shadow-apple-sm overflow-hidden">
-            <CardHeader>
-              <CardTitle className="text-lg">Waste Tracking</CardTitle>
-            </CardHeader>
-            <CardContent>
-              <Table>
-                <TableHeader className="bg-kitchen-muted">
-                  <TableRow>
-                    <TableHead className="font-medium">Date</TableHead>
-                    <TableHead className="font-medium">Item</TableHead>
-                    <TableHead className="font-medium">Category</TableHead>
-                    <TableHead className="font-medium text-right">Quantity</TableHead>
-                    <TableHead className="font-medium">Reason</TableHead>
-                    <TableHead className="font-medium text-right">Cost</TableHead>
-                    <TableHead className="font-medium">Reported By</TableHead>
-                  </TableRow>
-                </TableHeader>
-                <TableBody>
-                  {wasteData.map((waste) => (
-                    <TableRow key={waste.id} className="hover:bg-kitchen-muted/30">
-                      <TableCell>{formatDate(waste.date)}</TableCell>
-                      <TableCell className="font-medium">{waste.itemName}</TableCell>
-                      <TableCell>{waste.category}</TableCell>
-                      <TableCell className="text-right">{waste.quantity} {waste.unit}</TableCell>
-                      <TableCell>
-                        <Badge className={cn(
-                          waste.reason === 'Spoilage' 
-                            ? "bg-kitchen-danger/10 text-kitchen-danger border-kitchen-danger/20" 
-                            : waste.reason === 'Overproduction'
-                            ? "bg-kitchen-warning/10 text-kitchen-warning border-kitchen-warning/20"
-                            : "bg-kitchen-muted text-kitchen-muted-foreground"
-                        )}>
-                          {waste.reason}
-                        </Badge>
-                      </TableCell>
-                      <TableCell className="text-right">${waste.cost.toFixed(2)}</TableCell>
-                      <TableCell>{waste.reportedBy}</TableCell>
-                    </TableRow>
-                  ))}
-                </TableBody>
-              </Table>
-              <div className="mt-4">
-                <Button size="sm">Log Waste</Button>
-              </div>
-            </CardContent>
-          </Card>
-        </TabsContent>
-        
-        {/* Locations Tab */}
-        <TabsContent value="locations" className="pt-4">
-          <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-4 gap-4">
-            {locationData.map(location => (
-              <Card key={location.id} className="h-full">
-                <CardHeader className="pb-2">
-                  <CardTitle className="text-xl">{location.name}</CardTitle>
-                </CardHeader>
-                <CardContent>
-                  <div className="space-y-4">
-                    <div>
-                      <div className="flex justify-between text-sm mb-1">
-                        <span>Total Items</span>
-                        <span className="font-medium">{location.items}</span>
-                      </div>
-                      <ColoredProgress value={(location.items / 30) * 100} />
-                    </div>
-                    
-                    <div className="flex justify-between items-center">
-                      <div className="flex items-center gap-1 text-kitchen-danger">
-                        <AlertTriangle className="h-4 w-4" />
-                        <span className="text-sm">{location.lowStock} Low Stock</span>
-                      </div>
-                      <div className="flex items-center gap-1 text-kitchen-warning">
-                        <Clock className="h-4 w-4" />
-                        <span className="text-sm">{location.expiring} Expiring</span>
-                      </div>
-                    </div>
-                    
-                    <Button variant="outline" size="sm" className="w-full mt-4">
-                      View Details
-                    </Button>
-                  </div>
-                </CardContent>
-              </Card>
-            ))}
-          </div>
-        </TabsContent>
-
-        {/* Variance Report Tab */}
-        <TabsContent value="variance" className="pt-4">
-          <Card className="shadow-apple-sm overflow-hidden">
-            <CardHeader>
-              <CardTitle className="text-lg">Inventory Variance Report</CardTitle>
-            </CardHeader>
-            <CardContent>
-              <Table>
-                <TableHeader className="bg-kitchen-muted">
-                  <TableRow>
-                    <TableHead className="font-medium">Item Name</TableHead>
-                    <TableHead className="font-medium">Category</TableHead>
-                    <TableHead className="font-medium text-right">Theoretical</TableHead>
-                    <TableHead className="font-medium text-right">Actual</TableHead>
-                    <TableHead className="font-medium text-right">Variance</TableHead>
-                    <TableHead className="font-medium">Location</TableHead>
-                    <TableHead className="font-medium">Last Stocktake</TableHead>
-                  </TableRow>
-                </TableHeader>
-                <TableBody>
-                  {filteredItems
-                    .filter(item => item.variance !== 0)
-                    .sort((a, b) => Math.abs(b.variance) - Math.abs(a.variance))
-                    .map((item) => (
-                    <TableRow key={item.id} className="hover:bg-kitchen-muted/30">
-                      <TableCell className="font-medium">{item.name}</TableCell>
-                      <TableCell>{item.category}</TableCell>
-                      <TableCell className="text-right">{item.theoreticalStock} {item.unit}</TableCell>
-                      <TableCell className="text-right">{item.actualStock} {item.unit}</TableCell>
-                      <TableCell className={cn("text-right font-medium", getVarianceClass(item.variance))}>
-                        {item.variance > 0 ? "+" : ""}{item.variance} {item.unit}
-                      </TableCell>
-                      <TableCell>{item.location}</TableCell>
-                      <TableCell>{formatDate(item.lastStocktake)}</TableCell>
-                    </TableRow>
-                  ))}
-                </TableBody>
-              </Table>
-              <div className="mt-6 bg-kitchen-muted/30 p-4 rounded-md">
-                <h3 className="font-medium mb-2">Variance Analysis</h3>
-                <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
-                  <div>
-                    <p className="text-sm text-kitchen-muted-foreground mb-1">Variance Value</p>
-                    <p className="text-lg font-medium text-kitchen-danger">-$345.20</p>
-                  </div>
-                  <div>
-                    <p className="text-sm text-kitchen-muted-foreground mb-1">Most Affected Category</p>
-                    <p className="text-lg font-medium">Vegetables</p>
-                  </div>
-                  <div>
-                    <p className="text-sm text-kitchen-muted-foreground mb-1">Accuracy Rate</p>
-                    <p className="text-lg font-medium">93%</p>
-                  </div>
-                </div>
-              </div>
-            </CardContent>
           </Card>
         </TabsContent>
       </Tabs>

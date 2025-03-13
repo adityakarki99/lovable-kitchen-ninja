@@ -1,4 +1,3 @@
-
 import React, { useState } from 'react';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
@@ -199,7 +198,7 @@ const ComplianceAudits: React.FC = () => {
   const selectedAuditData = selectedAudit ? 
     auditRecords.find(audit => audit.id === selectedAudit) : null;
   
-  const auditFindings = selectedAudit ? 
+  const selectedAuditFindings = selectedAudit ? 
     auditFindings.filter(finding => finding.auditId === selectedAudit) : [];
   
   const getStatusBadge = (status: string) => {
@@ -270,7 +269,7 @@ const ComplianceAudits: React.FC = () => {
   };
 
   return (
-    <div className="space-y-6 animate-slide-up">
+    <div className="space-y-6 animate-fade-in">
       <Tabs defaultValue="audits" className="w-full">
         <TabsList className="bg-kitchen-muted">
           <TabsTrigger value="audits">Audit Records</TabsTrigger>
@@ -420,7 +419,7 @@ const ComplianceAudits: React.FC = () => {
                     
                     <div>
                       <h3 className="font-medium mb-3">Findings & Action Items</h3>
-                      {auditFindings.length > 0 ? (
+                      {selectedAuditFindings.length > 0 ? (
                         <Table>
                           <TableHeader className="bg-kitchen-muted">
                             <TableRow>
@@ -432,7 +431,7 @@ const ComplianceAudits: React.FC = () => {
                             </TableRow>
                           </TableHeader>
                           <TableBody>
-                            {auditFindings.map(finding => (
+                            {selectedAuditFindings.map(finding => (
                               <TableRow key={finding.id}>
                                 <TableCell>{finding.description}</TableCell>
                                 <TableCell>{getSeverityBadge(finding.severity)}</TableCell>

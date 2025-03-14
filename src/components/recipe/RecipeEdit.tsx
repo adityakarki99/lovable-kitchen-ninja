@@ -1,7 +1,7 @@
 
 import React, { useState } from 'react';
 import { useParams, useNavigate, Link } from 'react-router-dom';
-import { ArrowLeft, Save, Trash, Plus, X } from 'lucide-react';
+import { ArrowLeft, Save, Trash, Plus, X, Search, Sparkles } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Textarea } from '@/components/ui/textarea';
@@ -17,6 +17,20 @@ import {
   FormField
 } from '@/components/ui/form';
 import { useForm } from 'react-hook-form';
+import { 
+  Command, 
+  CommandEmpty, 
+  CommandGroup, 
+  CommandInput, 
+  CommandItem, 
+  CommandList 
+} from '@/components/ui/command';
+import { 
+  Popover, 
+  PopoverContent, 
+  PopoverTrigger 
+} from '@/components/ui/popover';
+import { ScrollArea } from '@/components/ui/scroll-area';
 
 // Mock data
 const recipeDetails = {
@@ -64,6 +78,25 @@ const recipeDetails = {
   ],
 };
 
+// Mock inventory ingredients
+const inventoryIngredients = [
+  { id: 1, name: 'Chicken Breast', quantity: '20kg', cost: 6.50 },
+  { id: 2, name: 'Fish Fillet', quantity: '15kg', cost: 8.75 },
+  { id: 3, name: 'Ground Beef', quantity: '12kg', cost: 5.20 },
+  { id: 4, name: 'Potatoes', quantity: '50kg', cost: 0.80 },
+  { id: 5, name: 'Rice', quantity: '25kg', cost: 1.20 },
+  { id: 6, name: 'Flour', quantity: '30kg', cost: 0.60 },
+  { id: 7, name: 'Sugar', quantity: '15kg', cost: 1.10 },
+  { id: 8, name: 'Salt', quantity: '10kg', cost: 0.50 },
+  { id: 9, name: 'Black Pepper', quantity: '5kg', cost: 2.30 },
+  { id: 10, name: 'Olive Oil', quantity: '20L', cost: 7.50 },
+  { id: 11, name: 'Vegetable Oil', quantity: '25L', cost: 3.80 },
+  { id: 12, name: 'Eggs', quantity: '500 units', cost: 0.20 },
+  { id: 13, name: 'Milk', quantity: '50L', cost: 1.30 },
+  { id: 14, name: 'Butter', quantity: '10kg', cost: 5.60 },
+  { id: 15, name: 'Cheese', quantity: '15kg', cost: 7.90 },
+];
+
 interface RecipeFormData {
   name: string;
   category: string;
@@ -86,6 +119,9 @@ const RecipeEdit: React.FC = () => {
   
   const [preparationSteps, setPreparationSteps] = useState([...recipe.preparationSteps]);
   const [newStep, setNewStep] = useState('');
+
+  const [ingredientSearch, setIngredientSearch] = useState('');
+  const [isIngredientPopoverOpen, setIsIngredientPopoverOpen] = useState(false);
 
   const form = useForm<RecipeFormData>({
     defaultValues: {
@@ -120,6 +156,15 @@ const RecipeEdit: React.FC = () => {
     setIngredients(ingredients.filter((_, i) => i !== index));
   };
 
+  const selectInventoryIngredient = (ingredient: typeof inventoryIngredients[0]) => {
+    setNewIngredient({
+      name: ingredient.name,
+      quantity: '',
+      cost: ingredient.cost
+    });
+    setIsIngredientPopoverOpen(false);
+  };
+
   const addEquipment = () => {
     if (newEquipment) {
       setEquipment([...equipment, newEquipment]);
@@ -141,6 +186,10 @@ const RecipeEdit: React.FC = () => {
   const removePreparationStep = (index: number) => {
     setPreparationSteps(preparationSteps.filter((_, i) => i !== index));
   };
+
+  const filteredIngredients = inventoryIngredients.filter(ingredient => 
+    ingredient.name.toLowerCase().includes(ingredientSearch.toLowerCase())
+  );
 
   return (
     <div className="space-y-6 animate-fade-in">
@@ -309,11 +358,54 @@ const RecipeEdit: React.FC = () => {
                 
                 <div className="flex gap-2 items-center">
                   <div className="grid grid-cols-3 gap-2 flex-1">
-                    <Input 
-                      value={newIngredient.name} 
-                      onChange={(e) => setNewIngredient({...newIngredient, name: e.target.value})}
-                      placeholder="Ingredient name"
-                    />
+                    <Popover open={isIngredientPopoverOpen} onOpenChange={setIsIngredientPopoverOpen}>
+                      <PopoverTrigger asChild>
+                        <div className="relative w-full">
+                          <Input 
+                            value={newIngredient.name} 
+                            onChange={(e) => setNewIngredient({...newIngredient, name: e.target.value})}
+                            placeholder="Ingredient name"
+                            className="w-full pr-10"
+                          />
+                          <Button 
+                            variant="ghost" 
+                            size="icon" 
+                            className="absolute right-0 top-0 h-full aspect-square" 
+                            onClick={() => setIsIngredientPopoverOpen(true)}
+                          >
+                            <Search className="h-4 w-4" />
+                          </Button>
+                        </div>
+                      </PopoverTrigger>
+                      <PopoverContent className="w-[300px] p-0" align="start">
+                        <Command>
+                          <CommandInput 
+                            placeholder="Search ingredients..." 
+                            value={ingredientSearch}
+                            onValueChange={setIngredientSearch}
+                          />
+                          <CommandList>
+                            <CommandEmpty>No ingredients found</CommandEmpty>
+                            <CommandGroup heading="Available Ingredients">
+                              <ScrollArea className="h-[200px]">
+                                {filteredIngredients.map((ingredient) => (
+                                  <CommandItem 
+                                    key={ingredient.id}
+                                    onSelect={() => selectInventoryIngredient(ingredient)}
+                                    className="flex justify-between"
+                                  >
+                                    <span>{ingredient.name}</span>
+                                    <span className="text-kitchen-muted-foreground text-xs">
+                                      ${ingredient.cost.toFixed(2)}/unit
+                                    </span>
+                                  </CommandItem>
+                                ))}
+                              </ScrollArea>
+                            </CommandGroup>
+                          </CommandList>
+                        </Command>
+                      </PopoverContent>
+                    </Popover>
                     <Input 
                       value={newIngredient.quantity} 
                       onChange={(e) => setNewIngredient({...newIngredient, quantity: e.target.value})}

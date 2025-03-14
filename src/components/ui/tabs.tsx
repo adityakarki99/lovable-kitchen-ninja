@@ -21,19 +21,34 @@ const TabsList = React.forwardRef<
 ))
 TabsList.displayName = TabsPrimitive.List.displayName
 
+interface TabsTriggerProps extends React.ComponentPropsWithoutRef<typeof TabsPrimitive.Trigger> {
+  variant?: 'default' | 'owner' | 'manager' | 'chef' | 'general';
+}
+
 const TabsTrigger = React.forwardRef<
   React.ElementRef<typeof TabsPrimitive.Trigger>,
-  React.ComponentPropsWithoutRef<typeof TabsPrimitive.Trigger>
->(({ className, ...props }, ref) => (
-  <TabsPrimitive.Trigger
-    ref={ref}
-    className={cn(
-      "inline-flex items-center justify-center whitespace-nowrap rounded-sm px-3 py-1.5 text-sm font-medium ring-offset-background transition-all focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 disabled:pointer-events-none disabled:opacity-50 data-[state=active]:bg-background data-[state=active]:text-foreground data-[state=active]:shadow-sm",
-      className
-    )}
-    {...props}
-  />
-))
+  TabsTriggerProps
+>(({ className, variant = 'default', ...props }, ref) => {
+  const variantClasses = {
+    default: "data-[state=active]:bg-background data-[state=active]:text-foreground",
+    owner: "data-[state=active]:bg-kitchen-primary/10 data-[state=active]:text-kitchen-primary",
+    manager: "data-[state=active]:bg-kitchen-warning/10 data-[state=active]:text-kitchen-warning",
+    chef: "data-[state=active]:bg-kitchen-success/10 data-[state=active]:text-kitchen-success",
+    general: "data-[state=active]:bg-kitchen-primary/10 data-[state=active]:text-kitchen-primary",
+  };
+
+  return (
+    <TabsPrimitive.Trigger
+      ref={ref}
+      className={cn(
+        "inline-flex items-center justify-center whitespace-nowrap rounded-sm px-3 py-1.5 text-sm font-medium ring-offset-background transition-all focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 disabled:pointer-events-none disabled:opacity-50 data-[state=active]:shadow-sm",
+        variantClasses[variant],
+        className
+      )}
+      {...props}
+    />
+  );
+})
 TabsTrigger.displayName = TabsPrimitive.Trigger.displayName
 
 const TabsContent = React.forwardRef<

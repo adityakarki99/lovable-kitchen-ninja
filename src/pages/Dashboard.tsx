@@ -1,10 +1,15 @@
 
-import React from 'react';
+import React, { useState } from 'react';
 import { PlusCircle, ShoppingCart, PackageCheck, DollarSign } from 'lucide-react';
 import DashboardMetrics from '@/components/dashboard/DashboardMetrics';
 import DashboardChart from '@/components/dashboard/DashboardChart';
 import DashboardActionCard from '@/components/dashboard/DashboardActionCard';
 import { useNavigate } from 'react-router-dom';
+import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
+import OwnerDashboard from '@/components/dashboard/roles/OwnerDashboard';
+import DutyManagerDashboard from '@/components/dashboard/roles/DutyManagerDashboard';
+import ChefDashboard from '@/components/dashboard/roles/ChefDashboard';
+import GeneralDashboard from '@/components/dashboard/roles/GeneralDashboard';
 
 const monthlySpendData = [
   { name: 'Jan', value: 19500 },
@@ -26,6 +31,7 @@ const categorySpendData = [
 
 const Dashboard: React.FC = () => {
   const navigate = useNavigate();
+  const [activeTab, setActiveTab] = useState("general");
 
   const handleAddRecipe = () => {
     navigate('/recipes');
@@ -46,45 +52,36 @@ const Dashboard: React.FC = () => {
         <p className="text-kitchen-muted-foreground mt-1">Good morning, welcome back to your kitchen overview</p>
       </div>
       
-      <DashboardMetrics />
-      
-      <div className="grid grid-cols-1 md:grid-cols-2 gap-4 lg:gap-6">
-        <DashboardChart 
-          title="Monthly Spend" 
-          description="Total spend by month"
-          data={monthlySpendData} 
-        />
-        <DashboardChart 
-          title="Spend by Category" 
-          description="Total spend by category this month"
-          data={categorySpendData} 
-        />
-      </div>
-      
-      <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
-        <DashboardActionCard 
-          title="Create New Recipe" 
-          description="Add a new recipe with ingredients, costs, and instructions"
-          icon={PlusCircle}
-          action="Add Recipe"
-          onClick={handleAddRecipe}
-          variant="primary"
-        />
-        <DashboardActionCard 
-          title="Create Purchase Order" 
-          description="Generate a new purchase order for your suppliers"
-          icon={ShoppingCart}
-          action="New Order"
-          onClick={handleNewProcurement}
-        />
-        <DashboardActionCard 
-          title="Update Inventory" 
-          description="Update your current stock levels and prices"
-          icon={PackageCheck}
-          action="Update Stock"
-          onClick={handleUpdateInventory}
-        />
-      </div>
+      <Tabs defaultValue="general" value={activeTab} onValueChange={setActiveTab} className="w-full">
+        <TabsList className="grid w-full grid-cols-4 mb-8">
+          <TabsTrigger value="owner">Owner/Manager</TabsTrigger>
+          <TabsTrigger value="dutyManager">Duty Manager</TabsTrigger>
+          <TabsTrigger value="chef">Chef</TabsTrigger>
+          <TabsTrigger value="general">General</TabsTrigger>
+        </TabsList>
+        
+        <TabsContent value="owner">
+          <OwnerDashboard />
+        </TabsContent>
+        
+        <TabsContent value="dutyManager">
+          <DutyManagerDashboard />
+        </TabsContent>
+        
+        <TabsContent value="chef">
+          <ChefDashboard />
+        </TabsContent>
+        
+        <TabsContent value="general">
+          <GeneralDashboard 
+            monthlySpendData={monthlySpendData}
+            categorySpendData={categorySpendData}
+            onAddRecipe={handleAddRecipe}
+            onNewProcurement={handleNewProcurement}
+            onUpdateInventory={handleUpdateInventory}
+          />
+        </TabsContent>
+      </Tabs>
     </div>
   );
 };

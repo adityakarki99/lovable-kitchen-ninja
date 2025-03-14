@@ -8,6 +8,7 @@ import WastageManagementModule from '@/components/wastage/WastageManagementModul
 import StocktakeModule from '@/components/stocktake/StocktakeModule';
 import StartStocktakeFlow from '@/components/stocktake/StartStocktakeFlow';
 import StocktakeAdvanced from '@/components/stocktake/StocktakeAdvanced';
+import StocktakeHub from '@/components/stocktake/StocktakeHub';
 
 const Inventory: React.FC = () => {
   return (
@@ -34,10 +35,26 @@ const Inventory: React.FC = () => {
           <WastageManagementModule />
         </TabsContent>
         <TabsContent value="stocktake" className="pt-4">
-          <Routes>
-            <Route index element={<StocktakeAdvanced />} />
-            <Route path="start" element={<StartStocktakeFlow />} />
-          </Routes>
+          <Tabs defaultValue="hub" className="w-full">
+            <TabsList className="bg-kitchen-muted">
+              <TabsTrigger value="hub">Stocktake Hub</TabsTrigger>
+              <TabsTrigger value="start">Start Stocktake</TabsTrigger>
+              <TabsTrigger value="active">Active Stocktake</TabsTrigger>
+              <TabsTrigger value="advanced">Advanced</TabsTrigger>
+            </TabsList>
+            <TabsContent value="hub" className="pt-4">
+              <StocktakeHub />
+            </TabsContent>
+            <TabsContent value="start" className="pt-4">
+              <StartStocktakeFlow />
+            </TabsContent>
+            <TabsContent value="active" className="pt-4">
+              <StocktakeModule />
+            </TabsContent>
+            <TabsContent value="advanced" className="pt-4">
+              <StocktakeAdvanced />
+            </TabsContent>
+          </Tabs>
         </TabsContent>
       </Tabs>
     </div>

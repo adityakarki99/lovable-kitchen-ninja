@@ -1,4 +1,3 @@
-
 import React, { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
@@ -29,7 +28,6 @@ import {
 } from 'lucide-react';
 import { cn } from '@/lib/utils';
 
-// Mock inventory data for stocktake
 const inventoryItems = [
   { 
     id: 1, 
@@ -213,7 +211,6 @@ const inventoryItems = [
   },
 ];
 
-// Stocktake templates
 const stocktakeTemplates = [
   {
     id: 1,
@@ -257,7 +254,6 @@ const stocktakeTemplates = [
   },
 ];
 
-// Location data for stocktake
 const locationData = [
   { id: 1, name: 'Main Kitchen', items: 18, lowStock: 3, expiring: 1 },
   { id: 2, name: 'Cold Storage', items: 12, lowStock: 0, expiring: 2 },
@@ -266,7 +262,6 @@ const locationData = [
   { id: 5, name: 'Prep Area', items: 8, lowStock: 2, expiring: 0 },
 ];
 
-// Mock active stocktake data
 const activeStocktake = {
   id: 'ST-2025-0308',
   startedAt: '2025-03-08T09:30:00',
@@ -282,7 +277,6 @@ const activeStocktake = {
   }
 };
 
-// Stocktake metrics
 const stocktakeMetrics = [
   {
     title: "Last Stocktake",
@@ -310,7 +304,6 @@ const stocktakeMetrics = [
   }
 ];
 
-// Customized Progress component that changes color based on value
 const ColoredProgress = ({ value, className }: { value: number, className?: string }) => {
   const getProgressColor = () => {
     if (value >= 90) return "bg-green-500";
@@ -322,7 +315,9 @@ const ColoredProgress = ({ value, className }: { value: number, className?: stri
     <Progress 
       value={value} 
       className={cn("h-2", className)} 
-      indicatorClassName={getProgressColor()}
+      style={{ 
+        '--progress-background': getProgressColor() 
+      } as React.CSSProperties}
     />
   );
 };
@@ -1093,4 +1088,3 @@ const StocktakeModule: React.FC = () => {
 };
 
 export default StocktakeModule;
-

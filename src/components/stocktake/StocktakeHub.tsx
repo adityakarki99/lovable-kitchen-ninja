@@ -1,4 +1,3 @@
-
 import React from 'react';
 import { useNavigate } from 'react-router-dom';
 import { Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle } from '@/components/ui/card';
@@ -21,7 +20,6 @@ import {
 } from 'lucide-react';
 import { cn } from '@/lib/utils';
 
-// Mock data for stocktake statistics
 const stocktakeStats = {
   completedThisMonth: 8,
   scheduledThisMonth: 12,
@@ -36,7 +34,6 @@ const stocktakeStats = {
   }
 };
 
-// Mock data for upcoming stocktakes
 const upcomingStocktakes = [
   {
     id: 1,
@@ -67,7 +64,6 @@ const upcomingStocktakes = [
   }
 ];
 
-// Mock data for recent stocktakes
 const recentStocktakes = [
   {
     id: 101,
@@ -98,7 +94,6 @@ const recentStocktakes = [
   }
 ];
 
-// Mock data for high variance items
 const highVarianceItems = [
   {
     id: 201,
@@ -132,7 +127,6 @@ const highVarianceItems = [
   }
 ];
 
-// Format date string to readable format
 const formatDate = (dateString: string) => {
   const date = new Date(dateString);
   return date.toLocaleDateString('en-US', { 
@@ -142,7 +136,6 @@ const formatDate = (dateString: string) => {
   });
 };
 
-// Calculate days remaining until a date
 const getDaysRemaining = (dateString: string) => {
   const dueDate = new Date(dateString);
   const today = new Date();
@@ -216,7 +209,6 @@ const StocktakeHub: React.FC = () => {
         </div>
       </div>
 
-      {/* Stats cards section */}
       <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
         <StockTakeStatCard
           title="Stocktake Completion"
@@ -248,9 +240,7 @@ const StocktakeHub: React.FC = () => {
         />
       </div>
 
-      {/* Main content section */}
       <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
-        {/* Upcoming stocktakes */}
         <div className="lg:col-span-1">
           <Card>
             <CardHeader>
@@ -318,9 +308,7 @@ const StocktakeHub: React.FC = () => {
           </Card>
         </div>
         
-        {/* Main data section */}
         <div className="lg:col-span-2 space-y-6">
-          {/* Recent stocktakes */}
           <Card>
             <CardHeader>
               <div className="flex justify-between items-center">
@@ -355,7 +343,7 @@ const StocktakeHub: React.FC = () => {
                             <Progress 
                               value={stocktake.accuracy} 
                               className="h-2 w-24" 
-                              indicatorClassName={
+                              indicatorColor={
                                 stocktake.accuracy >= 95 ? "bg-kitchen-success" :
                                 stocktake.accuracy >= 90 ? "bg-kitchen-warning" :
                                 "bg-kitchen-danger"
@@ -378,7 +366,6 @@ const StocktakeHub: React.FC = () => {
             </CardContent>
           </Card>
           
-          {/* High variance items */}
           <Card>
             <CardHeader>
               <div className="flex justify-between items-center">
@@ -435,7 +422,6 @@ const StocktakeHub: React.FC = () => {
         </div>
       </div>
       
-      {/* Next actions section */}
       <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
         <Card className="bg-kitchen-primary/5 border-kitchen-primary/20">
           <CardHeader className="pb-2">

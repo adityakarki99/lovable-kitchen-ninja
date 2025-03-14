@@ -11,6 +11,8 @@ import Inventory from "./pages/Inventory";
 import Procurement from "./pages/Procurement";
 import Financial from "./pages/Financial";
 import RecipeDetail from "./components/recipe/RecipeDetail";
+import RecipeForm from "./components/recipe/RecipeForm";
+import RecipeEdit from "./components/recipe/RecipeEdit";
 import NotFound from "./pages/NotFound";
 import Header from "./components/Header";
 import { Suspense } from "react";
@@ -45,10 +47,34 @@ const App = () => (
             } 
           />
           <Route 
-            path="/recipes/*" 
+            path="/recipes" 
             element={
               <AppLayout>
                 <Recipes />
+              </AppLayout>
+            } 
+          />
+          <Route 
+            path="/recipes/new" 
+            element={
+              <AppLayout>
+                <RecipeForm />
+              </AppLayout>
+            } 
+          />
+          <Route 
+            path="/recipes/:id" 
+            element={
+              <AppLayout>
+                <RecipeDetail />
+              </AppLayout>
+            } 
+          />
+          <Route 
+            path="/recipes/:id/edit" 
+            element={
+              <AppLayout>
+                <RecipeEdit />
               </AppLayout>
             } 
           />

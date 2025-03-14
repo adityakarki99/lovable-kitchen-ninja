@@ -1,7 +1,7 @@
 
 import React from 'react';
 import { ArrowLeft, Edit, ChefHat, DollarSign, PieChart, Utensils, Clipboard } from 'lucide-react';
-import { Link, useParams } from 'react-router-dom';
+import { Link, useParams, useNavigate } from 'react-router-dom';
 import { Button } from '@/components/ui/button';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { Card, CardContent } from '@/components/ui/card';
@@ -54,10 +54,15 @@ const recipeDetails = {
 
 const RecipeDetail: React.FC = () => {
   const { id } = useParams<{ id: string }>();
+  const navigate = useNavigate();
   const recipe = recipeDetails; // In a real app, you'd fetch the recipe by id
   
   // Calculate total cost
   const totalCost = recipe.ingredients.reduce((sum, ingredient) => sum + ingredient.cost, 0);
+  
+  const handleEdit = () => {
+    navigate(`/recipes/${id}/edit`);
+  };
   
   return (
     <div className="space-y-6 animate-fade-in">
@@ -70,7 +75,10 @@ const RecipeDetail: React.FC = () => {
           </Link>
           <h1 className="text-2xl font-semibold">{recipe.name}</h1>
         </div>
-        <Button className="bg-kitchen-primary hover:bg-kitchen-primary/90">
+        <Button 
+          className="bg-kitchen-primary hover:bg-kitchen-primary/90"
+          onClick={handleEdit}
+        >
           <Edit className="mr-2 h-4 w-4" />
           Edit Recipe
         </Button>

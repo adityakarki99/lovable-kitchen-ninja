@@ -1,7 +1,7 @@
 
 import React from 'react';
-import { Link } from 'react-router-dom';
-import { Search, ChevronRight, Filter } from 'lucide-react';
+import { Link, useNavigate } from 'react-router-dom';
+import { Search, ChevronRight, Filter, PlusCircle } from 'lucide-react';
 import { Input } from '@/components/ui/input';
 import { Button } from '@/components/ui/button';
 import { Card } from '@/components/ui/card';
@@ -18,11 +18,16 @@ const recipes = [
 
 const RecipeList: React.FC = () => {
   const [searchQuery, setSearchQuery] = React.useState('');
+  const navigate = useNavigate();
   
   const filteredRecipes = recipes.filter(recipe => 
     recipe.name.toLowerCase().includes(searchQuery.toLowerCase()) ||
     recipe.category.toLowerCase().includes(searchQuery.toLowerCase())
   );
+
+  const handleAddRecipe = () => {
+    navigate('/recipes/new');
+  };
 
   return (
     <div className="space-y-6 animate-slide-up">
@@ -41,7 +46,12 @@ const RecipeList: React.FC = () => {
             <Filter className="mr-2 h-4 w-4" />
             Filter
           </Button>
-          <Button size="sm" className="bg-kitchen-primary hover:bg-kitchen-primary/90">
+          <Button 
+            size="sm" 
+            className="bg-kitchen-primary hover:bg-kitchen-primary/90"
+            onClick={handleAddRecipe}
+          >
+            <PlusCircle className="mr-2 h-4 w-4" />
             New Recipe
           </Button>
         </div>

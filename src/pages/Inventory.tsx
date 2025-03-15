@@ -9,6 +9,7 @@ import StocktakeModule from '@/components/stocktake/StocktakeModule';
 import StartStocktakeFlow from '@/components/stocktake/StartStocktakeFlow';
 import StocktakeAdvanced from '@/components/stocktake/StocktakeAdvanced';
 import StocktakeHub from '@/components/stocktake/StocktakeHub';
+import TemplateManagement from '@/components/stocktake/templates/TemplateManagement';
 
 const Inventory: React.FC = () => {
   return (
@@ -40,6 +41,7 @@ const Inventory: React.FC = () => {
               <TabsTrigger value="hub">Stocktake Hub</TabsTrigger>
               <TabsTrigger value="start">Start Stocktake</TabsTrigger>
               <TabsTrigger value="active">Active Stocktake</TabsTrigger>
+              <TabsTrigger value="templates">Templates</TabsTrigger>
               <TabsTrigger value="advanced">Advanced</TabsTrigger>
             </TabsList>
             <TabsContent value="hub" className="pt-6">
@@ -50,6 +52,9 @@ const Inventory: React.FC = () => {
             </TabsContent>
             <TabsContent value="active" className="pt-6">
               <StocktakeModule />
+            </TabsContent>
+            <TabsContent value="templates" className="pt-6">
+              <TemplateManagement />
             </TabsContent>
             <TabsContent value="advanced" className="pt-6">
               <StocktakeAdvanced />

@@ -1,7 +1,7 @@
 
 import React from 'react';
 import { Link, useLocation } from 'react-router-dom';
-import { Bell, ChefHat, Package, ShoppingCart, BarChart3, Menu, DollarSign } from 'lucide-react';
+import { Bell, ChefHat, Package, ShoppingCart, BarChart3, Menu, DollarSign, Link2 } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Sheet, SheetContent, SheetTrigger } from '@/components/ui/sheet';
 import { useIsMobile } from '@/hooks/use-mobile';
@@ -64,6 +64,11 @@ const Header: React.FC = () => {
         )}
         
         <div className="flex items-center gap-4">
+          <Link to="/integration-hub">
+            <Button variant="ghost" size="icon" className="relative" title="Integration Hub">
+              <Link2 className="h-5 w-5" />
+            </Button>
+          </Link>
           <Button variant="ghost" size="icon" className="relative">
             <Bell className="h-5 w-5" />
             <span className="absolute top-0 right-0 h-2 w-2 rounded-full bg-kitchen-danger" />

@@ -10,6 +10,7 @@ import Recipes from "./pages/Recipes";
 import Inventory from "./pages/Inventory";
 import Procurement from "./pages/Procurement";
 import Financial from "./pages/Financial";
+import IntegrationHub from "./pages/IntegrationHub"; 
 import RecipeDetail from "./components/recipe/RecipeDetail";
 import RecipeForm from "./components/recipe/RecipeForm";
 import RecipeEdit from "./components/recipe/RecipeEdit";
@@ -99,6 +100,14 @@ const App = () => (
             element={
               <AppLayout>
                 <Financial />
+              </AppLayout>
+            } 
+          />
+          <Route 
+            path="/integration-hub" 
+            element={
+              <AppLayout>
+                <IntegrationHub />
               </AppLayout>
             } 
           />

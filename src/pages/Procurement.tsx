@@ -11,6 +11,7 @@ import PurchaseOrderApproval from '@/components/procurement/PurchaseOrderApprova
 import LineItemMatching from '@/components/procurement/LineItemMatching';
 import SupplierOnboarding from '@/components/procurement/SupplierOnboarding';
 import ComplianceAudits from '@/components/procurement/ComplianceAudits';
+import SupplierAdvanced from '@/components/procurement/SupplierAdvanced';
 import { suppliers } from '@/data/procurementData';
 
 const Procurement: React.FC = () => {
@@ -26,6 +27,7 @@ const Procurement: React.FC = () => {
           <TabsTrigger value="ordering">Supplier Ordering</TabsTrigger>
           <TabsTrigger value="po-approval">PO Approval</TabsTrigger>
           <TabsTrigger value="suppliers">Suppliers</TabsTrigger>
+          <TabsTrigger value="supplier-advanced">Supplier Advanced</TabsTrigger>
           <TabsTrigger value="inventory">Inventory</TabsTrigger>
           <TabsTrigger value="compliance">Compliance</TabsTrigger>
         </TabsList>
@@ -73,6 +75,11 @@ const Procurement: React.FC = () => {
               <SupplierOnboarding />
             </TabsContent>
           </Tabs>
+        </TabsContent>
+
+        {/* Supplier Advanced Tab - NEW */}
+        <TabsContent value="supplier-advanced" className="pt-4">
+          <SupplierAdvanced />
         </TabsContent>
 
         {/* Inventory Tab */}

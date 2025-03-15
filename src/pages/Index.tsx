@@ -24,19 +24,19 @@ const Index: React.FC = () => {
   };
 
   return (
-    <div className="min-h-screen flex flex-col items-center justify-center p-6 bg-gradient-to-b from-white to-gray-100">
-      <div className="text-center max-w-md">
-        <div className="mx-auto bg-green-100 p-4 rounded-full w-16 h-16 flex items-center justify-center mb-4">
-          <ChefHat className="h-8 w-8 text-green-600" />
+    <div className="min-h-screen flex flex-col items-center justify-center p-6 bg-gradient-to-b from-white to-carbon-gray-10">
+      <div className="carbon-fade-in text-center max-w-md">
+        <div className="mx-auto bg-carbon-blue-10 p-4 rounded-full w-16 h-16 flex items-center justify-center mb-4">
+          <ChefHat className="h-8 w-8 text-carbon-blue-60" />
         </div>
         <h1 className="text-3xl font-semibold tracking-tight">Culinary OS</h1>
-        <p className="mt-3 text-gray-600">
+        <p className="mt-3 text-carbon-text-secondary">
           A comprehensive kitchen management platform for restaurants and catering businesses
         </p>
         <div className="mt-8">
           <Button 
             onClick={handleEnterDashboard} 
-            className="bg-green-600 hover:bg-green-700 px-6"
+            className="bg-carbon-blue-60 hover:bg-carbon-blue-70 px-6"
             disabled={isRedirecting}
           >
             {isRedirecting ? 'Redirecting...' : 'Enter Dashboard'}

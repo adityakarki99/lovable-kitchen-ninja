@@ -3,6 +3,11 @@ import * as React from "react"
 
 import { cn } from "@/lib/utils"
 
+// Carbon Design System uses cards with:
+// - Squared corners (not rounded)
+// - Consistent border weights
+// - Specific spacing inside cards
+// - Shadow styles that match the design system
 const Card = React.forwardRef<
   HTMLDivElement,
   React.HTMLAttributes<HTMLDivElement>
@@ -10,7 +15,7 @@ const Card = React.forwardRef<
   <div
     ref={ref}
     className={cn(
-      "rounded-none border border-carbon-gray-20 bg-white text-carbon-gray-100 shadow-carbon-sm",
+      "border border-carbon-gray-20 bg-white text-carbon-gray-100 shadow-sm",
       className
     )}
     {...props}
@@ -37,7 +42,7 @@ const CardTitle = React.forwardRef<
   <h3
     ref={ref}
     className={cn(
-      "text-carbon-heading-03 font-normal text-carbon-gray-100",
+      "text-lg font-medium leading-6 text-carbon-gray-100",
       className
     )}
     {...props}
@@ -51,7 +56,7 @@ const CardDescription = React.forwardRef<
 >(({ className, ...props }, ref) => (
   <p
     ref={ref}
-    className={cn("mt-1 text-carbon-body-short-01 text-carbon-gray-70", className)}
+    className={cn("mt-1 text-sm text-carbon-gray-70", className)}
     {...props}
   />
 ))

@@ -29,19 +29,21 @@ const TabsTrigger = React.forwardRef<
   React.ElementRef<typeof TabsPrimitive.Trigger>,
   TabsTriggerProps
 >(({ className, variant = 'default', ...props }, ref) => {
+  // Carbon Design System uses underlines for tabs rather than different backgrounds
+  // Also uses heavier font weights for active tabs
   const variantClasses = {
-    default: "data-[state=active]:bg-carbon-blue-60 data-[state=active]:text-white",
-    owner: "data-[state=active]:bg-carbon-blue-60 data-[state=active]:text-white",
-    manager: "data-[state=active]:bg-carbon-blue-60 data-[state=active]:text-white",
-    chef: "data-[state=active]:bg-carbon-blue-60 data-[state=active]:text-white",
-    general: "data-[state=active]:bg-carbon-blue-60 data-[state=active]:text-white",
+    default: "data-[state=active]:border-carbon-blue-60 data-[state=active]:text-carbon-gray-100 data-[state=active]:font-semibold",
+    owner: "data-[state=active]:border-carbon-blue-60 data-[state=active]:text-carbon-gray-100 data-[state=active]:font-semibold",
+    manager: "data-[state=active]:border-carbon-blue-60 data-[state=active]:text-carbon-gray-100 data-[state=active]:font-semibold",
+    chef: "data-[state=active]:border-carbon-blue-60 data-[state=active]:text-carbon-gray-100 data-[state=active]:font-semibold",
+    general: "data-[state=active]:border-carbon-blue-60 data-[state=active]:text-carbon-gray-100 data-[state=active]:font-semibold",
   };
 
   return (
     <TabsPrimitive.Trigger
       ref={ref}
       className={cn(
-        "inline-flex h-full items-center justify-center whitespace-nowrap border-b-2 border-transparent px-4 py-1.5 text-sm font-medium text-carbon-gray-70 transition-all hover:text-carbon-gray-100 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-carbon-blue-60 focus-visible:ring-offset-2 disabled:pointer-events-none disabled:opacity-50 data-[state=active]:border-carbon-blue-60",
+        "inline-flex h-full items-center justify-center whitespace-nowrap border-b-2 border-transparent px-4 py-1.5 text-sm font-medium text-carbon-gray-70 transition-all hover:text-carbon-gray-100 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-carbon-blue-60 focus-visible:ring-offset-2 disabled:pointer-events-none disabled:opacity-50",
         variantClasses[variant],
         className
       )}

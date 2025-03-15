@@ -12,46 +12,46 @@ import StocktakeHub from '@/components/stocktake/StocktakeHub';
 
 const Inventory: React.FC = () => {
   return (
-    <div className="space-y-8 animate-fade-in pb-12">
-      <div>
-        <h1 className="text-3xl font-semibold">Inventory Management <span className="text-sm bg-kitchen-primary text-white px-2 py-0.5 rounded-full ml-2">3</span></h1>
-        <p className="text-kitchen-muted-foreground mt-1">Track inventory levels, manage recipes, handle waste, and conduct stocktakes</p>
+    <div className="space-y-6 animate-fade-in pb-12">
+      <div className="mb-8">
+        <h1 className="text-2xl font-semibold text-carbon-gray-100">Inventory Management <span className="text-xs bg-carbon-blue-60 text-white px-2 py-0.5 ml-2">3</span></h1>
+        <p className="text-carbon-gray-70 mt-1 text-sm">Track inventory levels, manage recipes, handle waste, and conduct stocktakes</p>
       </div>
       
       <Tabs defaultValue="inventory" className="w-full">
-        <TabsList className="bg-kitchen-muted">
+        <TabsList className="bg-carbon-gray-10 w-full">
           <TabsTrigger value="inventory">Inventory Management</TabsTrigger>
           <TabsTrigger value="recipes">Recipe Management</TabsTrigger>
           <TabsTrigger value="waste">Waste Management</TabsTrigger>
           <TabsTrigger value="stocktake">Stocktake</TabsTrigger>
         </TabsList>
-        <TabsContent value="inventory" className="pt-4">
+        <TabsContent value="inventory" className="pt-6">
           <InventoryTable />
         </TabsContent>
-        <TabsContent value="recipes" className="pt-4">
+        <TabsContent value="recipes" className="pt-6">
           <RecipeManagement />
         </TabsContent>
-        <TabsContent value="waste" className="pt-4">
+        <TabsContent value="waste" className="pt-6">
           <WastageManagementModule />
         </TabsContent>
-        <TabsContent value="stocktake" className="pt-4">
+        <TabsContent value="stocktake" className="pt-6">
           <Tabs defaultValue="hub" className="w-full">
-            <TabsList className="bg-kitchen-muted">
+            <TabsList className="bg-carbon-gray-10 w-full">
               <TabsTrigger value="hub">Stocktake Hub</TabsTrigger>
               <TabsTrigger value="start">Start Stocktake</TabsTrigger>
               <TabsTrigger value="active">Active Stocktake</TabsTrigger>
               <TabsTrigger value="advanced">Advanced</TabsTrigger>
             </TabsList>
-            <TabsContent value="hub" className="pt-4">
+            <TabsContent value="hub" className="pt-6">
               <StocktakeHub />
             </TabsContent>
-            <TabsContent value="start" className="pt-4">
+            <TabsContent value="start" className="pt-6">
               <StartStocktakeFlow />
             </TabsContent>
-            <TabsContent value="active" className="pt-4">
+            <TabsContent value="active" className="pt-6">
               <StocktakeModule />
             </TabsContent>
-            <TabsContent value="advanced" className="pt-4">
+            <TabsContent value="advanced" className="pt-6">
               <StocktakeAdvanced />
             </TabsContent>
           </Tabs>

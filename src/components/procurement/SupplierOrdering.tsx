@@ -1,5 +1,5 @@
 import React, { useState } from 'react';
-import { Search, Filter, Plus, CheckCircle, Clock, AlertTriangle, ShoppingCart, CircleDollarSign, BarChart3 } from 'lucide-react';
+import { Search, Filter, Plus, CheckCircle, Clock, AlertTriangle, ShoppingCart, CircleDollarSign, BarChart3, Calendar } from 'lucide-react';
 import { Input } from '@/components/ui/input';
 import { Button } from '@/components/ui/button';
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@/components/ui/table';
@@ -13,6 +13,7 @@ import SupplierSelector from './SupplierSelector';
 import ItemSelection from './ItemSelection';
 import OrderSummary from './OrderSummary';
 import LineItemMatching from './LineItemMatching';
+import ScheduledOrders from './ScheduledOrders';
 
 // Mock data for supplier orders
 const supplierOrders = [
@@ -186,6 +187,7 @@ const SupplierOrdering: React.FC = () => {
       <Tabs value={activeTab} onValueChange={setActiveTab} className="w-full">
         <TabsList className="bg-kitchen-muted">
           <TabsTrigger value="orders">Purchase Orders</TabsTrigger>
+          <TabsTrigger value="scheduled-orders">Scheduled Orders</TabsTrigger>
           <TabsTrigger value="new-order">Create Order</TabsTrigger>
           <TabsTrigger value="line-item-matching">Line-Item Matching</TabsTrigger>
           <TabsTrigger value="par">PAR Level Alerts</TabsTrigger>
@@ -294,10 +296,14 @@ const SupplierOrdering: React.FC = () => {
           </Card>
         </TabsContent>
         
+        {/* Scheduled Orders Tab */}
+        <TabsContent value="scheduled-orders" className="pt-4">
+          <ScheduledOrders />
+        </TabsContent>
+        
         {/* Create New Order Tab */}
         <TabsContent value="new-order" className="pt-4">
           <div className="grid grid-cols-1 lg:grid-cols-12 gap-4">
-            {/* Supplier Selection Panel */}
             <div className="lg:col-span-3">
               <SupplierSelector 
                 suppliers={suppliers} 
@@ -306,7 +312,6 @@ const SupplierOrdering: React.FC = () => {
               />
             </div>
             
-            {/* Item Selection Panel */}
             <div className="lg:col-span-6">
               <ItemSelection 
                 supplierId={selectedSupplier} 
@@ -315,7 +320,6 @@ const SupplierOrdering: React.FC = () => {
               />
             </div>
             
-            {/* Order Summary Panel */}
             <div className="lg:col-span-3">
               <OrderSummary 
                 items={selectedItems} 

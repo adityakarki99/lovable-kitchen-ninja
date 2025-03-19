@@ -1,4 +1,3 @@
-
 import React from 'react';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import ProcurementTable from '@/components/procurement/ProcurementTable';
@@ -12,6 +11,7 @@ import LineItemMatching from '@/components/procurement/LineItemMatching';
 import SupplierOnboarding from '@/components/procurement/SupplierOnboarding';
 import ComplianceAudits from '@/components/procurement/ComplianceAudits';
 import SupplierAdvanced from '@/components/procurement/SupplierAdvanced';
+import CreditNoteManagement from '@/components/procurement/CreditNoteManagement';
 import { suppliers } from '@/data/procurement/suppliers';
 
 const Procurement: React.FC = () => {
@@ -44,6 +44,7 @@ const Procurement: React.FC = () => {
               <TabsTrigger value="approval">PO Approvals</TabsTrigger>
               <TabsTrigger value="three-way">Three-Way Matching</TabsTrigger>
               <TabsTrigger value="line-item">Line-Item Matching</TabsTrigger>
+              <TabsTrigger value="credit-notes">Credit Notes</TabsTrigger>
             </TabsList>
             <TabsContent value="approval" className="pt-4">
               <PurchaseOrderApproval />
@@ -53,6 +54,9 @@ const Procurement: React.FC = () => {
             </TabsContent>
             <TabsContent value="line-item" className="pt-4">
               <LineItemMatching />
+            </TabsContent>
+            <TabsContent value="credit-notes" className="pt-4">
+              <CreditNoteManagement />
             </TabsContent>
           </Tabs>
         </TabsContent>

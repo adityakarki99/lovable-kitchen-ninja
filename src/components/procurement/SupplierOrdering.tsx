@@ -1,19 +1,15 @@
+
 import React, { useState } from 'react';
-import { Search, Filter, Plus, CheckCircle, Clock, AlertTriangle, ShoppingCart, CircleDollarSign, BarChart3, Calendar } from 'lucide-react';
-import { Input } from '@/components/ui/input';
-import { Button } from '@/components/ui/button';
-import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@/components/ui/table';
-import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
-import { Progress } from '@/components/ui/progress';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
-import { cn } from '@/lib/utils';
-import { Badge } from '@/components/ui/badge';
 import { useToast } from '@/hooks/use-toast';
 import SupplierSelector from './SupplierSelector';
 import ItemSelection from './ItemSelection';
 import OrderSummary from './OrderSummary';
 import LineItemMatching from './LineItemMatching';
 import ScheduledOrders from './ScheduledOrders';
+import PurchaseOrdersTable from './PurchaseOrdersTable';
+import ParLevelAlertsTab from './ParLevelAlertsTab';
+import SuppliersTab from './SuppliersTab';
 
 // Mock data for supplier orders
 const supplierOrders = [
@@ -101,66 +97,15 @@ const suppliers = [
 ];
 
 const SupplierOrdering: React.FC = () => {
-  const [searchQuery, setSearchQuery] = useState('');
   const [activeTab, setActiveTab] = useState('orders');
   const [selectedSupplier, setSelectedSupplier] = useState<number | null>(null);
   const [selectedItems, setSelectedItems] = useState<Array<{id: number, name: string, quantity: string, price: number}>>([]);
   const { toast } = useToast();
   
-  const filteredOrders = supplierOrders.filter(order => 
-    order.id.toLowerCase().includes(searchQuery.toLowerCase()) ||
-    order.supplier.toLowerCase().includes(searchQuery.toLowerCase()) ||
-    order.status.toLowerCase().includes(searchQuery.toLowerCase())
-  );
-
-  const getStatusIcon = (status: string) => {
-    switch (status) {
-      case 'Delivered':
-        return <CheckCircle className="h-4 w-4 text-kitchen-success" />;
-      case 'Partially Delivered':
-        return <Clock className="h-4 w-4 text-kitchen-warning" />;
-      case 'Delayed':
-        return <AlertTriangle className="h-4 w-4 text-kitchen-danger" />;
-      case 'Pending Approval':
-        return <ShoppingCart className="h-4 w-4 text-kitchen-muted-foreground" />;
-      default:
-        return null;
-    }
-  };
-
-  const getStatusClass = (status: string) => {
-    switch (status) {
-      case 'Delivered':
-        return "bg-kitchen-success/10 text-kitchen-success";
-      case 'Partially Delivered':
-        return "bg-kitchen-warning/10 text-kitchen-warning";
-      case 'Delayed':
-        return "bg-kitchen-danger/10 text-kitchen-danger";
-      case 'Pending Approval':
-        return "bg-kitchen-muted text-kitchen-muted-foreground";
-      default:
-        return "";
-    }
-  };
-
   const createNewOrder = () => {
     toast({
       title: "New order created",
       description: "Your order has been created and sent for approval",
-    });
-  };
-
-  const approveOrder = (id: string) => {
-    toast({
-      title: "Order approved",
-      description: `Order ${id} has been approved`,
-    });
-  };
-
-  const generatePAROrders = () => {
-    toast({
-      title: "PAR orders generated",
-      description: "Orders for items below PAR levels have been created",
     });
   };
 
@@ -196,104 +141,11 @@ const SupplierOrdering: React.FC = () => {
         
         {/* Purchase Orders Tab */}
         <TabsContent value="orders" className="pt-4">
-          <div className="flex flex-col sm:flex-row gap-4 items-stretch sm:items-center justify-between mb-6">
-            <div className="relative w-full sm:w-72 lg:w-96">
-              <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-kitchen-muted-foreground" />
-              <Input
-                placeholder="Search purchase orders..."
-                className="pl-9 bg-white border-kitchen-border"
-                value={searchQuery}
-                onChange={(e) => setSearchQuery(e.target.value)}
-              />
-            </div>
-            <div className="flex items-center gap-2">
-              <Button variant="outline" size="sm" className="text-kitchen-foreground">
-                <Filter className="mr-2 h-4 w-4" />
-                Filter
-              </Button>
-              <Button 
-                size="sm" 
-                className="bg-kitchen-primary hover:bg-kitchen-primary/90" 
-                onClick={() => setActiveTab('new-order')}
-              >
-                <Plus className="mr-2 h-4 w-4" />
-                New Order
-              </Button>
-            </div>
-          </div>
-          
-          <Card className="shadow-apple-sm overflow-hidden">
-            <Table>
-              <TableHeader className="bg-kitchen-muted">
-                <TableRow>
-                  <TableHead className="font-medium">Order No.</TableHead>
-                  <TableHead className="font-medium">Supplier</TableHead>
-                  <TableHead className="font-medium">Items</TableHead>
-                  <TableHead className="font-medium">Date Ordered</TableHead>
-                  <TableHead className="font-medium">Expected Delivery</TableHead>
-                  <TableHead className="font-medium">Status</TableHead>
-                  <TableHead className="font-medium text-right">Total Cost</TableHead>
-                  <TableHead className="font-medium">Progress</TableHead>
-                  <TableHead className="font-medium">Actions</TableHead>
-                </TableRow>
-              </TableHeader>
-              <TableBody>
-                {filteredOrders.map((order) => (
-                  <TableRow key={order.id} className="hover:bg-kitchen-muted/30">
-                    <TableCell className="font-medium">{order.id}</TableCell>
-                    <TableCell>{order.supplier}</TableCell>
-                    <TableCell>
-                      <div className="flex flex-col">
-                        {order.items.map((item, idx) => (
-                          <span key={idx} className="text-sm">
-                            {item.name} ({item.quantity})
-                          </span>
-                        ))}
-                      </div>
-                    </TableCell>
-                    <TableCell>{order.dateOrdered}</TableCell>
-                    <TableCell>{order.dateDelivery}</TableCell>
-                    <TableCell>
-                      <div className={cn(
-                        "pill-badge inline-flex items-center gap-1",
-                        getStatusClass(order.status)
-                      )}>
-                        {getStatusIcon(order.status)}
-                        {order.status}
-                      </div>
-                    </TableCell>
-                    <TableCell className="text-right">${order.totalCost.toFixed(2)}</TableCell>
-                    <TableCell>
-                      <div className="flex items-center gap-2">
-                        <Progress value={order.progress} className="h-2" />
-                        <span className="text-xs font-medium">{order.progress}%</span>
-                      </div>
-                    </TableCell>
-                    <TableCell>
-                      {order.status === 'Pending Approval' && (
-                        <Button 
-                          variant="outline" 
-                          size="sm"
-                          onClick={() => approveOrder(order.id)}
-                        >
-                          Approve
-                        </Button>
-                      )}
-                      {order.status === 'Delivered' && (
-                        <Button 
-                          variant="outline" 
-                          size="sm"
-                          onClick={() => setActiveTab('line-item-matching')}
-                        >
-                          Match
-                        </Button>
-                      )}
-                    </TableCell>
-                  </TableRow>
-                ))}
-              </TableBody>
-            </Table>
-          </Card>
+          <PurchaseOrdersTable 
+            orders={supplierOrders} 
+            onCreateNewOrder={() => setActiveTab('new-order')}
+            onSelectLineItemMatching={() => setActiveTab('line-item-matching')}
+          />
         </TabsContent>
         
         {/* Scheduled Orders Tab */}
@@ -337,95 +189,15 @@ const SupplierOrdering: React.FC = () => {
         
         {/* PAR Level Alerts Tab */}
         <TabsContent value="par" className="pt-4">
-          <div className="flex justify-between items-center mb-6">
-            <div>
-              <h3 className="text-lg font-medium">Items Below PAR Level</h3>
-              <p className="text-kitchen-muted-foreground text-sm">
-                These items are below your minimum stock level and need to be reordered
-              </p>
-            </div>
-            <Button 
-              className="bg-kitchen-primary hover:bg-kitchen-primary/90"
-              onClick={generatePAROrders}
-            >
-              Generate PAR Orders
-            </Button>
-          </div>
-          
-          <Card className="shadow-apple-sm overflow-hidden">
-            <Table>
-              <TableHeader className="bg-kitchen-muted">
-                <TableRow>
-                  <TableHead className="font-medium">Item Name</TableHead>
-                  <TableHead className="font-medium text-right">Current Stock</TableHead>
-                  <TableHead className="font-medium text-right">PAR Level</TableHead>
-                  <TableHead className="font-medium">Preferred Supplier</TableHead>
-                  <TableHead className="font-medium text-right">Suggested Order</TableHead>
-                  <TableHead className="font-medium">Actions</TableHead>
-                </TableRow>
-              </TableHeader>
-              <TableBody>
-                {parLevelAlerts.map((item) => (
-                  <TableRow key={item.id} className="hover:bg-kitchen-muted/30">
-                    <TableCell className="font-medium">{item.name}</TableCell>
-                    <TableCell className="text-right text-kitchen-danger font-medium">{item.currentStock}</TableCell>
-                    <TableCell className="text-right">{item.parLevel}</TableCell>
-                    <TableCell>{item.supplier}</TableCell>
-                    <TableCell className="text-right">{item.suggestedOrder}</TableCell>
-                    <TableCell>
-                      <Button variant="outline" size="sm">
-                        Add to Order
-                      </Button>
-                    </TableCell>
-                  </TableRow>
-                ))}
-              </TableBody>
-            </Table>
-          </Card>
+          <ParLevelAlertsTab parLevelAlerts={parLevelAlerts} />
         </TabsContent>
         
         {/* Suppliers Tab */}
         <TabsContent value="suppliers" className="pt-4">
-          <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 gap-4">
-            {suppliers.map(supplier => (
-              <Card key={supplier.id} className="h-full">
-                <CardHeader className="pb-2">
-                  <CardTitle className="text-xl">{supplier.name}</CardTitle>
-                  <Badge variant="outline" className="mt-1 w-fit">
-                    {supplier.type}
-                  </Badge>
-                </CardHeader>
-                <CardContent>
-                  <div className="space-y-4">
-                    <div className="flex flex-col space-y-1">
-                      <span className="text-sm text-kitchen-muted-foreground">Contact:</span>
-                      <span>{supplier.contact}</span>
-                    </div>
-                    
-                    <div className="flex flex-col space-y-1">
-                      <span className="text-sm text-kitchen-muted-foreground">Delivery Days:</span>
-                      <span>{supplier.deliveryDays}</span>
-                    </div>
-                    
-                    <div className="flex justify-between pt-4">
-                      <Button variant="outline" size="sm">
-                        <BarChart3 className="h-4 w-4 mr-2" />
-                        History
-                      </Button>
-                      <Button 
-                        size="sm" 
-                        className="bg-kitchen-primary hover:bg-kitchen-primary/90"
-                        onClick={() => handleSupplierSelect(supplier.id)}
-                      >
-                        <Plus className="h-4 w-4 mr-2" />
-                        New Order
-                      </Button>
-                    </div>
-                  </div>
-                </CardContent>
-              </Card>
-            ))}
-          </div>
+          <SuppliersTab 
+            suppliers={suppliers} 
+            onSupplierSelect={handleSupplierSelect} 
+          />
         </TabsContent>
       </Tabs>
     </div>

@@ -225,7 +225,7 @@ export default function FullScreenCreateOrder() {
               {suppliers
                 .filter(supplier => 
                   supplier.name.toLowerCase().includes(searchTerm.toLowerCase()) ||
-                  supplier.category.toLowerCase().includes(searchTerm.toLowerCase())
+                  supplier.categories.some(cat => cat.toLowerCase().includes(searchTerm.toLowerCase()))
                 )
                 .map(supplier => (
                   <Card 
@@ -239,14 +239,14 @@ export default function FullScreenCreateOrder() {
                       <div className="flex justify-between items-start">
                         <div>
                           <h3 className="font-medium">{supplier.name}</h3>
-                          <p className="text-sm text-carbon-gray-70">{supplier.category}</p>
+                          <p className="text-sm text-carbon-gray-70">{supplier.categories.join(', ')}</p>
                         </div>
                         {selectedSupplier === supplier.id && (
                           <Badge className="bg-carbon-blue-60">Selected</Badge>
                         )}
                       </div>
                       <div className="mt-2 text-sm">
-                        <p>{supplier.contactName}</p>
+                        <p>{supplier.accountManager}</p>
                         <p>{supplier.email}</p>
                         <p>{supplier.phone}</p>
                       </div>

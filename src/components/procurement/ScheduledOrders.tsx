@@ -1,10 +1,10 @@
-
 import React, { useState } from 'react';
+import { Link } from 'react-router-dom';
 import { 
   Search, Filter, CalendarCheck, CalendarX, PenLine, 
   Clock, Calendar, CheckCircle, XCircle, AlertCircle, 
   ChevronDown, ArrowUpDown, Info, Plus, RotateCcw, Filter as FilterIcon,
-  Calendar as CalendarIcon, Repeat, ListFilter, Clock3
+  Calendar as CalendarIcon, Repeat, ListFilter, Clock3, ExternalLink
 } from 'lucide-react';
 import { format, parseISO } from 'date-fns';
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@/components/ui/table';
@@ -101,22 +101,18 @@ const ScheduledOrders: React.FC = () => {
     });
   };
 
-  // Filter orders based on search query and status filters
   const filteredOrders = scheduledOrders.filter(order => {
-    // Text search filter
     const matchesSearch = searchQuery === '' || 
       order.id.toLowerCase().includes(searchQuery.toLowerCase()) ||
       order.supplier.toLowerCase().includes(searchQuery.toLowerCase()) ||
       order.status.toLowerCase().includes(searchQuery.toLowerCase()) ||
       order.requestor.toLowerCase().includes(searchQuery.toLowerCase());
     
-    // Status filter
     const matchesStatus = statusFilter.length === 0 || statusFilter.includes(order.status);
     
     return matchesSearch && matchesStatus;
   });
 
-  // Sort orders based on sortBy and sortDirection
   const sortedOrders = [...filteredOrders].sort((a, b) => {
     if (!sortBy) return 0;
     
@@ -255,14 +251,27 @@ const ScheduledOrders: React.FC = () => {
             </Button>
           </div>
           
-          <Button 
-            size="sm" 
-            className="bg-kitchen-primary hover:bg-kitchen-primary/90"
-            onClick={() => setIsCreateDialogOpen(true)}
-          >
-            <Calendar className="mr-2 h-4 w-4" />
-            Create Scheduled Order
-          </Button>
+          <div className="flex gap-2">
+            <Button 
+              size="sm" 
+              className="bg-kitchen-primary hover:bg-kitchen-primary/90"
+              onClick={() => setIsCreateDialogOpen(true)}
+            >
+              <Calendar className="mr-2 h-4 w-4" />
+              Create
+            </Button>
+            
+            <Link to="/procurement/scheduled-orders/new">
+              <Button 
+                variant="outline"
+                size="sm" 
+                className="border-kitchen-primary text-kitchen-primary hover:bg-kitchen-primary/10"
+              >
+                <ExternalLink className="mr-2 h-4 w-4" />
+                Full Screen
+              </Button>
+            </Link>
+          </div>
         </div>
       </div>
 
@@ -541,13 +550,11 @@ const ScheduledOrders: React.FC = () => {
         </div>
       </div>
 
-      {/* Create scheduled order dialog */}
       <CreateScheduledOrder 
         isOpen={isCreateDialogOpen}
         onClose={() => setIsCreateDialogOpen(false)}
         onSubmit={() => {
           setIsCreateDialogOpen(false);
-          // In a real app, we would fetch the updated orders list
         }}
       />
     </div>

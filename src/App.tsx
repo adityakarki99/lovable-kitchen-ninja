@@ -17,6 +17,7 @@ import RecipeEdit from "./components/recipe/RecipeEdit";
 import NotFound from "./pages/NotFound";
 import Header from "./components/Header";
 import { Suspense } from "react";
+import FullScreenCreateOrder from "./components/procurement/FullScreenCreateOrder";
 
 const queryClient = new QueryClient();
 
@@ -92,6 +93,14 @@ const App = () => (
             element={
               <AppLayout>
                 <Procurement />
+              </AppLayout>
+            } 
+          />
+          <Route 
+            path="/procurement/scheduled-orders/new" 
+            element={
+              <AppLayout>
+                <FullScreenCreateOrder />
               </AppLayout>
             } 
           />

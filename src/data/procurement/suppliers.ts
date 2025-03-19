@@ -1,0 +1,78 @@
+
+export const suppliers = [
+  {
+    id: 'SUP001',
+    name: '1A Yarra Valley',
+    logo: '/suppliers/1a-yarra.png',
+    onTimeDelivery: 95,
+    qualityRating: 4.8,
+    accountManager: 'Sarah Chen',
+    phone: '0412 345 678',
+    email: 'orders@1ayarravalley.com',
+    paymentTerms: 'Net 30',
+    minimumOrder: 200,
+    deliverySchedule: 'Mon, Wed, Fri',
+    categories: ['Produce', 'Herbs'],
+    leadTime: 2
+  },
+  {
+    id: 'SUP002',
+    name: 'Premium Meats',
+    logo: '/suppliers/premium-meats.png',
+    onTimeDelivery: 92,
+    qualityRating: 4.7,
+    accountManager: 'John Smith',
+    phone: '0423 456 789',
+    email: 'orders@premiummeats.com.au',
+    paymentTerms: 'Net 14',
+    minimumOrder: 300,
+    deliverySchedule: 'Tue, Thu',
+    categories: ['Meat', 'Poultry'],
+    leadTime: 1
+  },
+  {
+    id: 'SUP003',
+    name: 'Seafood Direct',
+    logo: '/suppliers/seafood-direct.png',
+    onTimeDelivery: 88,
+    qualityRating: 4.6,
+    accountManager: 'Maria Lopez',
+    phone: '0434 567 890',
+    email: 'orders@seafooddirect.com.au',
+    paymentTerms: 'Net 7',
+    minimumOrder: 250,
+    deliverySchedule: 'Wed, Fri',
+    categories: ['Seafood'],
+    leadTime: 1
+  },
+  {
+    id: 'SUP004',
+    name: 'Global Spices',
+    logo: '/suppliers/global-spices.png',
+    onTimeDelivery: 94,
+    qualityRating: 4.5,
+    accountManager: 'Raj Patel',
+    phone: '0445 678 901',
+    email: 'orders@globalspices.com.au',
+    paymentTerms: 'Net 30',
+    minimumOrder: 150,
+    deliverySchedule: 'Mon, Thu',
+    categories: ['Spices', 'Dry Goods'],
+    leadTime: 3
+  },
+  {
+    id: 'SUP005',
+    name: 'Bakery Supplies Inc.',
+    logo: '/suppliers/bakery-supplies.png',
+    onTimeDelivery: 90,
+    qualityRating: 4.4,
+    accountManager: 'Emma Johnson',
+    phone: '0456 789 012',
+    email: 'orders@bakerysupplies.com.au',
+    paymentTerms: 'Net 14',
+    minimumOrder: 200,
+    deliverySchedule: 'Tue, Fri',
+    categories: ['Bakery', 'Dairy'],
+    leadTime: 2
+  }
+];

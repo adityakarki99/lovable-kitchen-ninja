@@ -12,7 +12,7 @@ import LineItemMatching from '@/components/procurement/LineItemMatching';
 import SupplierOnboarding from '@/components/procurement/SupplierOnboarding';
 import ComplianceAudits from '@/components/procurement/ComplianceAudits';
 import SupplierAdvanced from '@/components/procurement/SupplierAdvanced';
-import { suppliers } from '@/data/procurementData';
+import { suppliers } from '@/data/procurement/suppliers';
 
 const Procurement: React.FC = () => {
   return (

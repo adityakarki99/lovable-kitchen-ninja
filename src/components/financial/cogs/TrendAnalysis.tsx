@@ -145,7 +145,11 @@ const TrendAnalysis = () => {
                   <CartesianGrid strokeDasharray="3 3" />
                   <XAxis dataKey="month" />
                   <YAxis domain={[0.8, 1.4]} />
-                  <Tooltip formatter={(value) => [`${value.toFixed(2)}x`, 'Seasonal Factor']} />
+                  <Tooltip formatter={(value) => {
+                    // Fix the type issue by checking if value is a number before calling toFixed
+                    const formattedValue = typeof value === 'number' ? value.toFixed(2) : value;
+                    return [`${formattedValue}x`, 'Seasonal Factor'];
+                  }} />
                   <Line type="monotone" dataKey="avg" name="Seasonal Factor" stroke="#ff7300" strokeWidth={2} dot={{ r: 4 }} />
                 </LineChart>
               </ResponsiveContainer>

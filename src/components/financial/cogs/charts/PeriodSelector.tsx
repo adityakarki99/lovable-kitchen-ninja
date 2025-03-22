@@ -2,9 +2,11 @@
 import React from 'react';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 
+export type PeriodValue = '3months' | '6months' | '12months' | 'ytd' | 'custom';
+
 interface PeriodSelectorProps {
-  selectedPeriod: string;
-  onPeriodChange: (value: string) => void;
+  selectedPeriod: PeriodValue;
+  onPeriodChange: (value: PeriodValue) => void;
 }
 
 const PeriodSelector: React.FC<PeriodSelectorProps> = ({ selectedPeriod, onPeriodChange }) => {
@@ -12,7 +14,7 @@ const PeriodSelector: React.FC<PeriodSelectorProps> = ({ selectedPeriod, onPerio
     <div className="flex justify-end">
       <Select 
         defaultValue={selectedPeriod} 
-        onValueChange={onPeriodChange}
+        onValueChange={(value) => onPeriodChange(value as PeriodValue)}
       >
         <SelectTrigger className="w-[180px]">
           <SelectValue placeholder="Select time period" />

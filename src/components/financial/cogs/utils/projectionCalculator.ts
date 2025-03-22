@@ -1,9 +1,11 @@
 
+import { MonthlyCogsData, ProjectionData } from '../types/chartDataTypes';
+
 /**
  * Calculates projected COGS and sales data for future months
  * based on historical data and average growth rate.
  */
-export const calculateProjectedData = (historicalData: any[], monthsToProject: number = 6) => {
+export const calculateProjectedData = (historicalData: MonthlyCogsData[], monthsToProject: number = 6): ProjectionData[] => {
   // First, calculate the average growth rate from the last 6 months
   const lastSixMonths = historicalData.slice(-6);
   const avgGrowthRate = lastSixMonths.reduce((sum, item, index) => {
@@ -20,7 +22,7 @@ export const calculateProjectedData = (historicalData: any[], monthsToProject: n
   const lastMonthIndex = monthNames.indexOf(historicalData[historicalData.length - 1].month);
   
   // Build the projected data
-  const projectedData = [];
+  const projectedData: ProjectionData[] = [];
   for (let i = 0; i < monthsToProject; i++) {
     const monthIndex = (lastMonthIndex + i + 1) % 12;
     const month = monthNames[monthIndex];

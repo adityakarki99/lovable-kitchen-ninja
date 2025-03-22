@@ -1,4 +1,3 @@
-
 import React from 'react';
 import { Card, CardContent } from '@/components/ui/card';
 import { 
@@ -10,12 +9,10 @@ import {
   Tooltip, 
   ResponsiveContainer,
 } from 'recharts';
+import { SeasonalPatternData } from '../types/chartDataTypes';
 
 interface SeasonalPatternsChartProps {
-  data: Array<{
-    month: string;
-    avg: number;
-  }>;
+  data: SeasonalPatternData[];
 }
 
 const SeasonalPatternsChart: React.FC<SeasonalPatternsChartProps> = ({ data }) => {
@@ -33,7 +30,6 @@ const SeasonalPatternsChart: React.FC<SeasonalPatternsChartProps> = ({ data }) =
               <XAxis dataKey="month" />
               <YAxis domain={[0.8, 1.4]} />
               <Tooltip formatter={(value) => {
-                // Fix the type issue by checking if value is a number before calling toFixed
                 const formattedValue = typeof value === 'number' ? value.toFixed(2) : value;
                 return [`${formattedValue}x`, 'Seasonal Factor'];
               }} />

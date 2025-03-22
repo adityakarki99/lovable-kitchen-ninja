@@ -1,25 +1,26 @@
 
 import React, { useState, useMemo } from 'react';
 import { monthlyCogsData } from '@/data/financial/cogsData';
-import PeriodSelector from './charts/PeriodSelector';
+import PeriodSelector, { PeriodValue } from './charts/PeriodSelector';
 import CogsVsSalesChart from './charts/CogsVsSalesChart';
 import YearOverYearChart from './charts/YearOverYearChart';
 import SeasonalPatternsChart from './charts/SeasonalPatternsChart';
 import ProjectionsChart from './charts/ProjectionsChart';
 import { calculateProjectedData } from './utils/projectionCalculator';
+import { MonthlyCogsData, YearOverYearData, SeasonalPatternData, ProjectionData } from './types/chartDataTypes';
 
 const TrendAnalysis = () => {
-  const [selectedPeriod, setSelectedPeriod] = useState('12months');
+  const [selectedPeriod, setSelectedPeriod] = useState<PeriodValue>('12months');
   
   // Generate year-over-year comparison data
-  const previousYearData = useMemo(() => monthlyCogsData.map(item => ({
+  const previousYearData: YearOverYearData[] = useMemo(() => monthlyCogsData.map(item => ({
     ...item,
     previousYearCogs: item.cogs * (Math.random() * 0.4 + 0.8), // 80-120% of current
     previousYearSales: item.sales * (Math.random() * 0.4 + 0.8), // 80-120% of current
   })), []);
   
   // Seasonal patterns data
-  const seasonalData = useMemo(() => [
+  const seasonalData: SeasonalPatternData[] = useMemo(() => [
     { month: 'Jan', avg: 0.95 },
     { month: 'Feb', avg: 0.90 },
     { month: 'Mar', avg: 0.95 },
@@ -35,10 +36,10 @@ const TrendAnalysis = () => {
   ], []);
   
   // Calculate projected data using our utility function
-  const projectedData = useMemo(() => calculateProjectedData(monthlyCogsData), []);
+  const projectedData: ProjectionData[] = useMemo(() => calculateProjectedData(monthlyCogsData), []);
   
   // Filter data based on selected period
-  const filteredData = useMemo(() => {
+  const filteredData: MonthlyCogsData[] = useMemo(() => {
     switch (selectedPeriod) {
       case '3months':
         return monthlyCogsData.slice(-3);
@@ -51,6 +52,15 @@ const TrendAnalysis = () => {
         return monthlyCogsData;
     }
   }, [selectedPeriod]);
+
+  // Combined historical and projection data for the projection chart
+  const combinedProjectionData: ProjectionData[] = useMemo(() => {
+    const historicalData = monthlyCogsData.slice(-6).map(item => ({
+      ...item,
+      isProjected: false
+    }));
+    return [...historicalData, ...projectedData];
+  }, [projectedData]);
 
   return (
     <div className="space-y-6">
@@ -72,7 +82,7 @@ const TrendAnalysis = () => {
       </div>
       
       {/* Projections */}
-      <ProjectionsChart data={[...monthlyCogsData.slice(-6), ...projectedData]} />
+      <ProjectionsChart data={combinedProjectionData} />
     </div>
   );
 };

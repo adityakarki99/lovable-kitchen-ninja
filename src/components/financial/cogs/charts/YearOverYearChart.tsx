@@ -1,4 +1,3 @@
-
 import React from 'react';
 import { Card, CardContent } from '@/components/ui/card';
 import { 
@@ -10,15 +9,10 @@ import {
   Tooltip, 
   ResponsiveContainer,
 } from 'recharts';
+import { YearOverYearData } from '../types/chartDataTypes';
 
 interface YearOverYearChartProps {
-  data: Array<{
-    month: string;
-    cogs: number;
-    previousYearCogs: number;
-    sales: number;
-    previousYearSales: number;
-  }>;
+  data: YearOverYearData[];
 }
 
 const YearOverYearChart: React.FC<YearOverYearChartProps> = ({ data }) => {

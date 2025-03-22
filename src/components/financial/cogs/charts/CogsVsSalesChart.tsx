@@ -1,4 +1,3 @@
-
 import React from 'react';
 import { Card, CardContent } from '@/components/ui/card';
 import { 
@@ -10,14 +9,10 @@ import {
   Tooltip, 
   ResponsiveContainer,
 } from 'recharts';
+import { MonthlyCogsData } from '../types/chartDataTypes';
 
 interface CogsVsSalesChartProps {
-  data: Array<{
-    month: string;
-    cogs: number;
-    sales: number;
-    percentage: number;
-  }>;
+  data: MonthlyCogsData[];
 }
 
 const CogsVsSalesChart: React.FC<CogsVsSalesChartProps> = ({ data }) => {

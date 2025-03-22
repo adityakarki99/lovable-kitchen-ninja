@@ -1,4 +1,3 @@
-
 import React from 'react';
 import { Card, CardContent } from '@/components/ui/card';
 import { 
@@ -10,15 +9,10 @@ import {
   Tooltip, 
   ResponsiveContainer 
 } from 'recharts';
+import { ProjectionData } from '../types/chartDataTypes';
 
 interface ProjectionsChartProps {
-  data: Array<{
-    month: string;
-    cogs: number;
-    sales: number;
-    percentage: number;
-    isProjected?: boolean;
-  }>;
+  data: ProjectionData[];
 }
 
 const ProjectionsChart: React.FC<ProjectionsChartProps> = ({ data }) => {

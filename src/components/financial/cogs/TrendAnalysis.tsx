@@ -1,5 +1,5 @@
 
-import React from 'react';
+import React, { useState } from 'react';
 import { Card, CardContent } from '@/components/ui/card';
 import { 
   LineChart, 
@@ -16,6 +16,8 @@ import { monthlyCogsData } from '@/data/financial/cogsData';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 
 const TrendAnalysis = () => {
+  const [selectedPeriod, setSelectedPeriod] = useState('12months');
+  
   // Calculate year-over-year comparison (mock data)
   const previousYearData = monthlyCogsData.map(item => ({
     ...item,
@@ -39,8 +41,7 @@ const TrendAnalysis = () => {
     { month: 'Dec', avg: 1.25 },
   ];
   
-  // Calculate projected data for next 6 months
-  // Important: This needs to come AFTER the seasonalData declaration
+  // Calculate projected data for next 6 months without self-references
   // First, calculate the average growth rate from the last 6 months
   const lastSixMonths = monthlyCogsData.slice(-6);
   const avgGrowthRate = lastSixMonths.reduce((sum, item, index) => {
@@ -48,28 +49,36 @@ const TrendAnalysis = () => {
     return sum + ((lastSixMonths[index].cogs / lastSixMonths[index-1].cogs) - 1);
   }, 0) / (lastSixMonths.length - 1);
   
-  // Now build the projected data using the calculated growth rate
-  const projectedData = Array.from({ length: 6 }).map((_, index) => {
-    const month = ['Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun'][index];
-    const lastMonthCogs = index === 0 ? monthlyCogsData[monthlyCogsData.length - 1].cogs : projectedData[index - 1].cogs;
-    const projectedCogs = lastMonthCogs * (1 + avgGrowthRate);
-    const lastMonthSales = index === 0 ? monthlyCogsData[monthlyCogsData.length - 1].sales : projectedData[index - 1].sales;
-    const projectedSales = lastMonthSales * (1 + avgGrowthRate);
+  // Base value for projections (last month's actual data)
+  const baseCogs = monthlyCogsData[monthlyCogsData.length - 1].cogs;
+  const baseSales = monthlyCogsData[monthlyCogsData.length - 1].sales;
+  
+  // Build the projected data using the calculated growth rate without self-references
+  const projectedData = [];
+  for (let i = 0; i < 6; i++) {
+    const month = ['Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun'][i];
+    // Calculate based on compound growth from the base values
+    const cogsGrowthFactor = Math.pow(1 + avgGrowthRate, i + 1);
+    const projectedCogs = baseCogs * cogsGrowthFactor;
+    const projectedSales = baseSales * cogsGrowthFactor;
     
-    return {
+    projectedData.push({
       month: month,
       cogs: Math.round(projectedCogs),
       sales: Math.round(projectedSales),
       percentage: Math.round((projectedCogs / projectedSales) * 1000) / 10,
       isProjected: true
-    };
-  });
+    });
+  }
 
   return (
     <div className="space-y-6">
       {/* Time Period Selector */}
       <div className="flex justify-end">
-        <Select defaultValue="12months">
+        <Select 
+          defaultValue={selectedPeriod} 
+          onValueChange={value => setSelectedPeriod(value)}
+        >
           <SelectTrigger className="w-[180px]">
             <SelectValue placeholder="Select time period" />
           </SelectTrigger>

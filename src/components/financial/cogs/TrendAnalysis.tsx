@@ -23,29 +23,6 @@ const TrendAnalysis = () => {
     previousYearSales: item.sales * (Math.random() * 0.4 + 0.8), // 80-120% of current
   }));
   
-  // Calculate projected data for next 6 months
-  const lastSixMonths = monthlyCogsData.slice(-6);
-  const avgGrowthRate = lastSixMonths.reduce((sum, item, index) => {
-    if (index === 0) return sum;
-    return sum + ((lastSixMonths[index].cogs / lastSixMonths[index-1].cogs) - 1);
-  }, 0) / (lastSixMonths.length - 1);
-  
-  const projectedData = Array.from({ length: 6 }).map((_, index) => {
-    const month = ['Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun'][index];
-    const lastMonthCogs = index === 0 ? monthlyCogsData[monthlyCogsData.length - 1].cogs : projectedData[index - 1].cogs;
-    const projectedCogs = lastMonthCogs * (1 + avgGrowthRate);
-    const lastMonthSales = index === 0 ? monthlyCogsData[monthlyCogsData.length - 1].sales : projectedData[index - 1].sales;
-    const projectedSales = lastMonthSales * (1 + avgGrowthRate);
-    
-    return {
-      month: month,
-      cogs: Math.round(projectedCogs),
-      sales: Math.round(projectedSales),
-      percentage: Math.round((projectedCogs / projectedSales) * 1000) / 10,
-      isProjected: true
-    };
-  });
-  
   // Seasonal patterns - calculate average by month across years
   const seasonalData = [
     { month: 'Jan', avg: 0.95 },
@@ -61,6 +38,32 @@ const TrendAnalysis = () => {
     { month: 'Nov', avg: 1.00 },
     { month: 'Dec', avg: 1.25 },
   ];
+  
+  // Calculate projected data for next 6 months
+  // Important: This needs to come AFTER the seasonalData declaration
+  // First, calculate the average growth rate from the last 6 months
+  const lastSixMonths = monthlyCogsData.slice(-6);
+  const avgGrowthRate = lastSixMonths.reduce((sum, item, index) => {
+    if (index === 0) return sum;
+    return sum + ((lastSixMonths[index].cogs / lastSixMonths[index-1].cogs) - 1);
+  }, 0) / (lastSixMonths.length - 1);
+  
+  // Now build the projected data using the calculated growth rate
+  const projectedData = Array.from({ length: 6 }).map((_, index) => {
+    const month = ['Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun'][index];
+    const lastMonthCogs = index === 0 ? monthlyCogsData[monthlyCogsData.length - 1].cogs : projectedData[index - 1].cogs;
+    const projectedCogs = lastMonthCogs * (1 + avgGrowthRate);
+    const lastMonthSales = index === 0 ? monthlyCogsData[monthlyCogsData.length - 1].sales : projectedData[index - 1].sales;
+    const projectedSales = lastMonthSales * (1 + avgGrowthRate);
+    
+    return {
+      month: month,
+      cogs: Math.round(projectedCogs),
+      sales: Math.round(projectedSales),
+      percentage: Math.round((projectedCogs / projectedSales) * 1000) / 10,
+      isProjected: true
+    };
+  });
 
   return (
     <div className="space-y-6">

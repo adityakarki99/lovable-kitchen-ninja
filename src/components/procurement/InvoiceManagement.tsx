@@ -1,6 +1,6 @@
 
 import React, { useState } from 'react';
-import { Plus, Scanner } from 'lucide-react';
+import { Plus, FileSearch } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import InvoiceList from './InvoiceList';
 import InvoiceDetails from './InvoiceDetails';

@@ -44,12 +44,15 @@ export const getSuppliers = async (): Promise<{ success: boolean; data?: Supplie
 /**
  * Fetch a single supplier by ID
  */
-export const getSupplierById = async (id: string): Promise<{ success: boolean; data?: Supplier; error?: any }> => {
+export const getSupplierById = async (id: number | string): Promise<{ success: boolean; data?: Supplier; error?: any }> => {
   try {
+    // Convert id to number if it's a string
+    const numericId = typeof id === 'string' ? parseInt(id, 10) : id;
+    
     const { data, error } = await supabase
       .from('suppliers')
       .select('*')
-      .eq('id', id)
+      .eq('id', numericId)
       .single();
     
     if (error) {

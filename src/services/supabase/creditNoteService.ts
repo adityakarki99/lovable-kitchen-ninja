@@ -6,27 +6,29 @@ import { CreditNoteReason } from "@/data/procurement/creditNotes";
 export interface CreditNoteItem {
   id?: number;
   credit_note_id?: number;
-  item_id: string;
+  item_id: number;
   quantity: number;
   price: number;
   total: number;
   reason: CreditNoteReason;
   notes?: string;
+  item?: any; // Add this to support joined queries
 }
 
 export interface CreditNote {
   id?: number;
   credit_note_number: string;
-  purchase_order_id: string;
+  purchase_order_id: number;
   supplier_id?: number;
   date_issued: string;
   supplier_ref: string;
   total_amount: number;
-  status: 'Pending' | 'Approved' | 'Rejected';
+  status: string; // Changed from enum to string to match DB
   approver?: string;
   approval_date?: string;
   notes?: string;
   items?: CreditNoteItem[];
+  purchase_order?: any; // Add this to support joined queries
 }
 
 /**
@@ -35,10 +37,11 @@ export interface CreditNote {
 export const createCreditNote = async (formData: CreditNoteFormValues): Promise<{ success: boolean; data?: CreditNote; error?: any }> => {
   try {
     // 1. First, get the supplier ID from the purchase order
+    const purchaseOrderId = parseInt(formData.purchaseOrderId, 10);
     const { data: purchaseOrder, error: poError } = await supabase
       .from('purchase_orders')
       .select('supplier_id')
-      .eq('id', formData.purchaseOrderId)
+      .eq('id', purchaseOrderId)
       .single();
     
     if (poError) {
@@ -57,7 +60,7 @@ export const createCreditNote = async (formData: CreditNoteFormValues): Promise<
       .from('credit_notes')
       .insert({
         credit_note_number: creditNoteNumber,
-        purchase_order_id: formData.purchaseOrderId,
+        purchase_order_id: purchaseOrderId,
         supplier_id: purchaseOrder.supplier_id,
         date_issued: new Date().toISOString(),
         supplier_ref: formData.supplierRef,
@@ -76,7 +79,7 @@ export const createCreditNote = async (formData: CreditNoteFormValues): Promise<
     // 5. Create the credit note items
     const creditNoteItems = formData.items.map(item => ({
       credit_note_id: data.id,
-      item_id: item.itemId,
+      item_id: parseInt(item.itemId, 10),
       quantity: item.quantity,
       price: item.price,
       total: item.price * item.quantity,
@@ -130,8 +133,11 @@ export const getCreditNotes = async (): Promise<{ success: boolean; data?: Credi
 /**
  * Fetch a single credit note by ID, including its items
  */
-export const getCreditNoteById = async (id: string): Promise<{ success: boolean; data?: CreditNote & { items: CreditNoteItem[] }; error?: any }> => {
+export const getCreditNoteById = async (id: number | string): Promise<{ success: boolean; data?: CreditNote & { items: CreditNoteItem[] }; error?: any }> => {
   try {
+    // Convert id to number if it's a string
+    const numericId = typeof id === 'string' ? parseInt(id, 10) : id;
+    
     // Fetch the credit note
     const { data: creditNote, error } = await supabase
       .from('credit_notes')
@@ -139,7 +145,7 @@ export const getCreditNoteById = async (id: string): Promise<{ success: boolean;
         *,
         purchase_order:purchase_order_id (*)
       `)
-      .eq('id', id)
+      .eq('id', numericId)
       .single();
     
     if (error) {
@@ -154,7 +160,7 @@ export const getCreditNoteById = async (id: string): Promise<{ success: boolean;
         *,
         item:item_id (*)
       `)
-      .eq('credit_note_id', id);
+      .eq('credit_note_id', numericId);
     
     if (itemsError) {
       console.error(`Error fetching items for credit note ${id}:`, itemsError);
@@ -178,11 +184,14 @@ export const getCreditNoteById = async (id: string): Promise<{ success: boolean;
  * Update a credit note's status
  */
 export const updateCreditNoteStatus = async (
-  id: string, 
+  id: number | string, 
   status: 'Approved' | 'Rejected', 
   approver: string
 ): Promise<{ success: boolean; error?: any }> => {
   try {
+    // Convert id to number if it's a string
+    const numericId = typeof id === 'string' ? parseInt(id, 10) : id;
+    
     const { error } = await supabase
       .from('credit_notes')
       .update({
@@ -190,7 +199,7 @@ export const updateCreditNoteStatus = async (
         approver,
         approval_date: new Date().toISOString()
       })
-      .eq('id', id);
+      .eq('id', numericId);
     
     if (error) {
       console.error(`Error updating credit note ${id} status:`, error);

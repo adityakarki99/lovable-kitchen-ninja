@@ -8,6 +8,7 @@ export interface PurchaseOrderItem {
   quantity: number;
   price: number;
   total: number;
+  item?: any; // Add this to support joined queries
 }
 
 export interface PurchaseOrder {
@@ -16,13 +17,14 @@ export interface PurchaseOrder {
   date_ordered: string;
   date_delivery?: string;
   payment_terms?: string;
-  status: 'Pending' | 'Approved' | 'Delivered' | 'Cancelled';
+  status: string; // Changed from enum to string to match DB
   requestor?: string;
   urgency?: string;
   total_amount: number;
   budget_impact?: number;
   notes?: string;
   items?: PurchaseOrderItem[];
+  supplier?: any; // Add this to support joined queries
 }
 
 /**
@@ -53,8 +55,11 @@ export const getPurchaseOrders = async (): Promise<{ success: boolean; data?: Pu
 /**
  * Fetch a single purchase order by ID, including its items
  */
-export const getPurchaseOrderById = async (id: string): Promise<{ success: boolean; data?: PurchaseOrder & { items: PurchaseOrderItem[] }; error?: any }> => {
+export const getPurchaseOrderById = async (id: number | string): Promise<{ success: boolean; data?: PurchaseOrder & { items: PurchaseOrderItem[] }; error?: any }> => {
   try {
+    // Convert id to number if it's a string
+    const numericId = typeof id === 'string' ? parseInt(id, 10) : id;
+    
     // Fetch the purchase order
     const { data: purchaseOrder, error } = await supabase
       .from('purchase_orders')
@@ -62,7 +67,7 @@ export const getPurchaseOrderById = async (id: string): Promise<{ success: boole
         *,
         supplier:supplier_id (*)
       `)
-      .eq('id', id)
+      .eq('id', numericId)
       .single();
     
     if (error) {
@@ -77,7 +82,7 @@ export const getPurchaseOrderById = async (id: string): Promise<{ success: boole
         *,
         item:item_id (*)
       `)
-      .eq('purchase_order_id', id);
+      .eq('purchase_order_id', numericId);
     
     if (itemsError) {
       console.error(`Error fetching items for purchase order ${id}:`, itemsError);

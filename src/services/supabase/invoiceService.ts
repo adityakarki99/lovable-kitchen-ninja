@@ -1,4 +1,3 @@
-
 import { supabase } from "@/integrations/supabase/client";
 
 export interface InvoiceItem {
@@ -11,6 +10,7 @@ export interface InvoiceItem {
   total_price: number;
   tax_rate?: number;
   tax_amount?: number;
+  item?: any;
 }
 
 export interface Invoice {
@@ -24,11 +24,13 @@ export interface Invoice {
   subtotal: number;
   tax_amount?: number;
   total_amount: number;
-  status: 'Pending' | 'Approved' | 'Rejected' | 'Paid';
-  payment_status?: 'Unpaid' | 'Partially Paid' | 'Paid' | 'On Hold';
+  status: string;
+  payment_status?: string;
   payment_terms?: string;
   notes?: string;
   items?: InvoiceItem[];
+  purchase_order?: any;
+  supplier?: any;
 }
 
 export interface ScannedInvoice {
@@ -41,7 +43,7 @@ export interface ScannedInvoice {
   ocr_raw_text?: string;
   ocr_confidence?: number;
   ocr_service?: string;
-  scan_status: 'Pending' | 'Processing' | 'Completed' | 'Failed';
+  scan_status: string;
   manual_review_required?: boolean;
   manual_review_notes?: string;
 }
@@ -51,7 +53,6 @@ export interface ScannedInvoice {
  */
 export const createInvoice = async (invoiceData: Invoice): Promise<{ success: boolean; data?: Invoice; error?: any }> => {
   try {
-    // Create the invoice
     const { data, error } = await supabase
       .from('invoices')
       .insert({
@@ -77,7 +78,6 @@ export const createInvoice = async (invoiceData: Invoice): Promise<{ success: bo
       return { success: false, error };
     }
 
-    // If there are items, create those too
     if (invoiceData.items && invoiceData.items.length > 0) {
       const items = invoiceData.items.map(item => ({
         invoice_id: data.id,
@@ -174,9 +174,10 @@ export const getInvoices = async (): Promise<{ success: boolean; data?: Invoice[
 /**
  * Fetch a single invoice by ID, including its items
  */
-export const getInvoiceById = async (id: string): Promise<{ success: boolean; data?: Invoice & { items: InvoiceItem[] }; error?: any }> => {
+export const getInvoiceById = async (id: number | string): Promise<{ success: boolean; data?: Invoice & { items: InvoiceItem[] }; error?: any }> => {
   try {
-    // Fetch the invoice
+    const numericId = typeof id === 'string' ? parseInt(id, 10) : id;
+    
     const { data: invoice, error } = await supabase
       .from('invoices')
       .select(`
@@ -184,7 +185,7 @@ export const getInvoiceById = async (id: string): Promise<{ success: boolean; da
         supplier:supplier_id (*),
         purchase_order:purchase_order_id (*)
       `)
-      .eq('id', id)
+      .eq('id', numericId)
       .single();
     
     if (error) {
@@ -192,14 +193,13 @@ export const getInvoiceById = async (id: string): Promise<{ success: boolean; da
       return { success: false, error };
     }
 
-    // Fetch the invoice items
     const { data: items, error: itemsError } = await supabase
       .from('invoice_items')
       .select(`
         *,
         item:item_id (*)
       `)
-      .eq('invoice_id', id);
+      .eq('invoice_id', numericId);
     
     if (itemsError) {
       console.error(`Error fetching items for invoice ${id}:`, itemsError);

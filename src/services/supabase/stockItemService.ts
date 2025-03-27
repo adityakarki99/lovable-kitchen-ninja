@@ -17,6 +17,7 @@ export interface StockItem {
   volatility?: string;
   suggested_par?: number;
   is_critical?: boolean;
+  supplier?: any; // Add this to support joined queries
 }
 
 /**
@@ -47,15 +48,18 @@ export const getStockItems = async (): Promise<{ success: boolean; data?: StockI
 /**
  * Fetch a single stock item by ID
  */
-export const getStockItemById = async (id: string): Promise<{ success: boolean; data?: StockItem; error?: any }> => {
+export const getStockItemById = async (id: number | string): Promise<{ success: boolean; data?: StockItem; error?: any }> => {
   try {
+    // Convert id to number if it's a string
+    const numericId = typeof id === 'string' ? parseInt(id, 10) : id;
+    
     const { data, error } = await supabase
       .from('stock_items')
       .select(`
         *,
         supplier:supplier_id (id, name)
       `)
-      .eq('id', id)
+      .eq('id', numericId)
       .single();
     
     if (error) {

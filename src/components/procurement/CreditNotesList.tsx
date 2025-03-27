@@ -1,4 +1,3 @@
-
 import React, { useState, useEffect } from 'react';
 import { Search, Filter, AlertCircle, CheckCircle, XCircle, Clock, Loader2 } from 'lucide-react';
 import { Input } from '@/components/ui/input';
@@ -52,7 +51,7 @@ const CreditNotesList: React.FC<CreditNotesListProps> = ({ onSelectCreditNote })
 
   const filteredCreditNotes = creditNotes.filter(note => 
     note.credit_note_number?.toLowerCase().includes(searchQuery.toLowerCase()) ||
-    note.purchase_order?.id?.toString().toLowerCase().includes(searchQuery.toLowerCase()) ||
+    note.purchase_order_id?.toString().toLowerCase().includes(searchQuery.toLowerCase()) ||
     note.status?.toLowerCase().includes(searchQuery.toLowerCase())
   );
 

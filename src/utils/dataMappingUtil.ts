@@ -54,13 +54,13 @@ export const mapDbSupplierToUi = (dbSupplier: Supplier) => {
 export const mapDbPurchaseOrderToUi = (dbPo: PurchaseOrder) => {
   return {
     id: dbPo.id?.toString() || '',
-    supplier: dbPo.supplier ? mapDbSupplierToUi(dbPo.supplier as unknown as Supplier) : null,
+    supplier: dbPo.supplier ? mapDbSupplierToUi(dbPo.supplier) : null,
     dateOrdered: dbPo.date_ordered,
     dateDelivery: dbPo.date_delivery || '',
     paymentTerms: dbPo.payment_terms || '',
     status: dbPo.status,
     items: dbPo.items ? dbPo.items.map(item => ({
-      item: item.item ? mapDbStockItemToUi(item.item as unknown as StockItem) : null,
+      item: item.item ? mapDbStockItemToUi(item.item) : null,
       quantity: item.quantity,
       price: item.price,
       total: item.total
@@ -84,7 +84,7 @@ export const mapDbCreditNoteToUi = (dbCreditNote: CreditNote & { items?: CreditN
     dateIssued: dbCreditNote.date_issued,
     supplierRef: dbCreditNote.supplier_ref || '',
     items: dbCreditNote.items ? dbCreditNote.items.map(item => ({
-      item: item.item ? mapDbStockItemToUi(item.item as unknown as StockItem) : { id: item.item_id.toString(), name: `Item #${item.item_id}` },
+      item: item.item ? mapDbStockItemToUi(item.item) : { id: item.item_id.toString(), name: `Item #${item.item_id}` },
       quantity: item.quantity,
       price: item.price,
       total: item.total,
@@ -110,7 +110,7 @@ export const mapDbInvoiceToUi = (dbInvoice: Invoice & { items?: InvoiceItem[] })
     dateDue: dbInvoice.date_due || '',
     supplierRef: dbInvoice.supplier_ref || '',
     items: dbInvoice.items ? dbInvoice.items.map(item => ({
-      item: item.item ? mapDbStockItemToUi(item.item as unknown as StockItem) : { id: item.item_id?.toString() || '', name: item.description },
+      item: item.item ? mapDbStockItemToUi(item.item) : { id: item.item_id?.toString() || '', name: item.description },
       quantity: item.quantity,
       price: item.unit_price,
       total: item.total_price

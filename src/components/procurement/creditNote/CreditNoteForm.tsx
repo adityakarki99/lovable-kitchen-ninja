@@ -1,5 +1,5 @@
 
-import React from 'react';
+import React, { useState, useEffect } from 'react';
 import { FormField, FormItem, FormLabel, FormControl, FormMessage, Form } from '@/components/ui/form';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { Input } from '@/components/ui/input';
@@ -9,9 +9,11 @@ import { Label } from '@/components/ui/label';
 import { DialogFooter } from '@/components/ui/dialog';
 import { useForm, FormProvider } from 'react-hook-form';
 import { zodResolver } from '@hookform/resolvers/zod';
-import { formSchema, CreditNoteFormValues } from './creditNoteSchema';
-import { purchaseOrders } from '@/data/procurement/purchaseOrders';
+import { formSchema, CreditNoteFormValues, creditNoteReasons } from './creditNoteSchema';
 import CreditNoteItem from './CreditNoteItem';
+import { getPurchaseOrders } from '@/services/supabase/purchaseOrderService';
+import { getStockItems } from '@/services/supabase/stockItemService';
+import { Loader2 } from 'lucide-react';
 
 interface CreditNoteFormProps {
   onSubmit: (values: CreditNoteFormValues) => void;
@@ -24,6 +26,10 @@ const CreditNoteForm: React.FC<CreditNoteFormProps> = ({
   onCancel,
   initialValues 
 }) => {
+  const [loading, setLoading] = useState(true);
+  const [purchaseOrders, setPurchaseOrders] = useState<Array<{ id: string; display: string }>>([]);
+  const [stockItems, setStockItems] = useState<Array<{ id: string; name: string }>>([]);
+
   const form = useForm<CreditNoteFormValues>({
     resolver: zodResolver(formSchema),
     defaultValues: initialValues || {
@@ -40,9 +46,55 @@ const CreditNoteForm: React.FC<CreditNoteFormProps> = ({
     },
   });
 
+  useEffect(() => {
+    // Fetch purchase orders and stock items from Supabase
+    const fetchData = async () => {
+      setLoading(true);
+      try {
+        const [purchaseOrdersResponse, stockItemsResponse] = await Promise.all([
+          getPurchaseOrders(),
+          getStockItems()
+        ]);
+
+        if (purchaseOrdersResponse.success && purchaseOrdersResponse.data) {
+          // Format purchase orders for the dropdown
+          const formattedPOs = purchaseOrdersResponse.data.map(po => ({
+            id: po.id?.toString() || '',
+            display: `${po.id} - ${po.supplier?.name || 'Unknown Supplier'}`
+          }));
+          setPurchaseOrders(formattedPOs);
+        }
+
+        if (stockItemsResponse.success && stockItemsResponse.data) {
+          // Format stock items for the dropdown
+          const formattedItems = stockItemsResponse.data.map(item => ({
+            id: item.id.toString(),
+            name: item.name
+          }));
+          setStockItems(formattedItems);
+        }
+      } catch (error) {
+        console.error('Error fetching form data:', error);
+      } finally {
+        setLoading(false);
+      }
+    };
+
+    fetchData();
+  }, []);
+
   const handleSubmit = (values: CreditNoteFormValues) => {
     onSubmit(values);
   };
+
+  if (loading) {
+    return (
+      <div className="flex justify-center items-center p-8">
+        <Loader2 className="h-8 w-8 animate-spin text-kitchen-primary" />
+        <span className="ml-2">Loading form data...</span>
+      </div>
+    );
+  }
 
   return (
     <FormProvider {...form}>
@@ -66,7 +118,7 @@ const CreditNoteForm: React.FC<CreditNoteFormProps> = ({
                   <SelectContent>
                     {purchaseOrders.map((po) => (
                       <SelectItem key={po.id} value={po.id}>
-                        {po.id} - {po.supplier.name}
+                        {po.display}
                       </SelectItem>
                     ))}
                   </SelectContent>
@@ -98,6 +150,7 @@ const CreditNoteForm: React.FC<CreditNoteFormProps> = ({
               key={index} 
               index={index}
               showRemoveButton={index > 0}
+              stockItems={stockItems}
               onRemove={() => {
                 const currentItems = form.getValues().items;
                 form.setValue('items', currentItems.filter((_, i) => i !== index));

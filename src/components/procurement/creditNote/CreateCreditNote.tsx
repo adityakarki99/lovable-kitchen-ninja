@@ -3,11 +3,11 @@ import React, { useState } from 'react';
 import { Dialog, DialogContent, DialogDescription, DialogHeader, DialogTitle } from '@/components/ui/dialog';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { useToast } from '@/hooks/use-toast';
-import { purchaseOrders } from '@/data/procurement/purchaseOrders';
-import { stockItems } from '@/data/procurement/stockItems';
 import CreditNoteForm from './CreditNoteForm';
 import { CreditNoteFormValues } from './creditNoteSchema';
 import InvoiceScanner from '../invoice/InvoiceScanner';
+import { createCreditNote } from '@/services/supabase/creditNoteService';
+import { Loader2 } from 'lucide-react';
 
 interface CreateCreditNoteProps {
   isOpen: boolean;
@@ -17,6 +17,7 @@ interface CreateCreditNoteProps {
 
 const CreateCreditNote: React.FC<CreateCreditNoteProps> = ({ isOpen, onClose, onSubmit }) => {
   const [activeTab, setActiveTab] = useState<string>('manual');
+  const [submitting, setSubmitting] = useState(false);
   const { toast } = useToast();
   const [formValues, setFormValues] = useState<Partial<CreditNoteFormValues>>({
     purchaseOrderId: '',
@@ -33,29 +34,22 @@ const CreateCreditNote: React.FC<CreateCreditNoteProps> = ({ isOpen, onClose, on
 
   const handleOCRResult = (result: any) => {
     if (result) {
-      const matchedPO = purchaseOrders.find(po => 
-        po.supplier.name.toLowerCase().includes((result.supplier || '').toLowerCase())
-      );
-      
+      // Try to map OCR data to our form
       const newFormValues = {
-        purchaseOrderId: matchedPO?.id || '',
-        supplierRef: result.invoice_number || '',
+        purchaseOrderId: '',
+        supplierRef: result.invoiceNumber || result.invoice_number || '',
         items: [] as any[],
         notes: '',
       };
       
       if (result.items && result.items.length > 0) {
         newFormValues.items = result.items.map((item: any) => {
-          const matchedItem = stockItems.find(si => 
-            si.name.toLowerCase().includes((item.description || '').toLowerCase())
-          );
-          
           return {
-            itemId: matchedItem?.id || '',
+            itemId: '',
             quantity: item.quantity || 1,
             price: item.unit_price || 0,
             reason: 'Price Discrepancy' as const,
-            notes: item.description || '',
+            notes: item.description || item.name || '',
           };
         });
       }
@@ -70,13 +64,34 @@ const CreateCreditNote: React.FC<CreateCreditNoteProps> = ({ isOpen, onClose, on
     }
   };
 
-  const handleFormSubmit = (values: CreditNoteFormValues) => {
-    console.log('Credit Note Form Values:', values);
-    toast({
-      title: 'Credit note created',
-      description: 'The credit note has been successfully created',
-    });
-    onSubmit();
+  const handleFormSubmit = async (values: CreditNoteFormValues) => {
+    setSubmitting(true);
+    try {
+      const result = await createCreditNote(values);
+      
+      if (result.success) {
+        toast({
+          title: 'Credit note created',
+          description: 'The credit note has been successfully created',
+        });
+        onSubmit();
+      } else {
+        toast({
+          variant: "destructive",
+          title: 'Error creating credit note',
+          description: result.error?.message || 'An error occurred while creating the credit note',
+        });
+      }
+    } catch (error) {
+      console.error('Error creating credit note:', error);
+      toast({
+        variant: "destructive",
+        title: 'Error creating credit note',
+        description: 'An unexpected error occurred',
+      });
+    } finally {
+      setSubmitting(false);
+    }
   };
 
   return (
@@ -96,11 +111,18 @@ const CreateCreditNote: React.FC<CreateCreditNoteProps> = ({ isOpen, onClose, on
           </TabsList>
           
           <TabsContent value="manual" className="py-4">
-            <CreditNoteForm 
-              onSubmit={handleFormSubmit}
-              onCancel={onClose}
-              initialValues={formValues}
-            />
+            {submitting ? (
+              <div className="flex items-center justify-center p-8">
+                <Loader2 className="h-8 w-8 animate-spin text-kitchen-primary" />
+                <span className="ml-2">Creating credit note...</span>
+              </div>
+            ) : (
+              <CreditNoteForm 
+                onSubmit={handleFormSubmit}
+                onCancel={onClose}
+                initialValues={formValues}
+              />
+            )}
           </TabsContent>
           
           <TabsContent value="scan" className="py-4">

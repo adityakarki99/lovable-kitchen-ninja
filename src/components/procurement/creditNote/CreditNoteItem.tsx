@@ -6,19 +6,20 @@ import { Input } from '@/components/ui/input';
 import { Textarea } from '@/components/ui/textarea';
 import { Button } from '@/components/ui/button';
 import { useFormContext } from 'react-hook-form';
-import { stockItems } from '@/data/procurement/stockItems';
 import { creditNoteReasons } from './creditNoteSchema';
 
 interface CreditNoteItemProps {
   index: number;
   onRemove: () => void;
   showRemoveButton: boolean;
+  stockItems: Array<{ id: string; name: string }>;
 }
 
 const CreditNoteItem: React.FC<CreditNoteItemProps> = ({ 
   index, 
   onRemove,
-  showRemoveButton
+  showRemoveButton,
+  stockItems
 }) => {
   const form = useFormContext();
   

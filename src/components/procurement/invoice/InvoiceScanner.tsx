@@ -5,6 +5,7 @@ import ScannerUpload from './ScannerUpload';
 import ScanProgress from './ScanProgress';
 import { supabase } from '@/integrations/supabase/client';
 import { toast } from '@/hooks/use-toast';
+import { recordScannedInvoice } from '@/services/supabase/invoiceService';
 
 type InvoiceScannerProps = {
   onScanComplete: (result: any) => void;
@@ -63,7 +64,7 @@ const InvoiceScanner: React.FC<InvoiceScannerProps> = ({ onScanComplete }) => {
       clearInterval(interval);
       setProgress(100);
       
-      setTimeout(() => {
+      setTimeout(async () => {
         setIsScanning(false);
         if (data?.success && data?.data?.structured_data) {
           // Process successful OCR result
@@ -85,6 +86,24 @@ const InvoiceScanner: React.FC<InvoiceScannerProps> = ({ onScanComplete }) => {
             })) || []
           };
           
+          // Record the scan in the database
+          try {
+            await recordScannedInvoice({
+              file_path: result.invoiceNumber, // This is a placeholder - in a real app, we'd store this in Supabase Storage
+              file_name: file.name,
+              file_type: file.type,
+              file_size: file.size,
+              ocr_raw_text: data.data.text,
+              ocr_confidence: data.data.confidence || 0,
+              scan_status: 'Completed',
+              ocr_service: 'DeepSeek',
+              manual_review_required: false
+            });
+          } catch (recordError) {
+            console.error('Error recording scan:', recordError);
+            // Continue even if recording fails
+          }
+          
           toast({
             title: "Invoice Scanned Successfully",
             description: `Invoice ${result.invoiceNumber} has been processed.`,
@@ -96,7 +115,7 @@ const InvoiceScanner: React.FC<InvoiceScannerProps> = ({ onScanComplete }) => {
         }
       }, 500);
       
-    } catch (err) {
+    } catch (err: any) {
       clearInterval(interval);
       setProgress(0);
       setIsScanning(false);

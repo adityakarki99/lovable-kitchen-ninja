@@ -1,6 +1,6 @@
 
 import { StockItem } from '@/services/supabase/stockItemService';
-import { PurchaseOrder } from '@/services/supabase/purchaseOrderService';
+import { PurchaseOrder, PurchaseOrderItem } from '@/services/supabase/purchaseOrderService';
 import { Supplier } from '@/services/supabase/supplierService';
 import { CreditNote, CreditNoteItem } from '@/services/supabase/creditNoteService';
 import { Invoice, InvoiceItem } from '@/services/supabase/invoiceService';

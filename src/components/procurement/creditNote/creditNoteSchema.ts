@@ -1,6 +1,7 @@
 
 import * as z from 'zod';
-import { CreditNoteReason } from '@/data/procurement/creditNotes';
+
+export type CreditNoteReason = 'Damaged Goods' | 'Incorrect Items' | 'Price Discrepancy' | 'Quality Issues' | 'Returned Items' | 'Other';
 
 export const creditNoteReasons: CreditNoteReason[] = [
   'Damaged Goods',

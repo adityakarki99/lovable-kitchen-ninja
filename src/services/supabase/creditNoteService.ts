@@ -10,7 +10,7 @@ export interface CreditNoteItem {
   quantity: number;
   price: number;
   total: number;
-  reason: CreditNoteReason;
+  reason: string; // Changed from CreditNoteReason to string to match DB
   notes?: string;
   item?: any; // Add this to support joined queries
 }
@@ -167,12 +167,15 @@ export const getCreditNoteById = async (id: number | string): Promise<{ success:
       return { success: false, error: itemsError };
     }
 
+    // Type assertion is needed here as the DB response doesn't exactly match our interface
+    const typedItems = items as unknown as CreditNoteItem[];
+
     return { 
       success: true, 
       data: { 
         ...creditNote,
-        items: items || []
-      } 
+        items: typedItems || []
+      } as unknown as CreditNote & { items: CreditNoteItem[] }
     };
   } catch (error) {
     console.error(`Unexpected error fetching credit note ${id}:`, error);

@@ -1,15 +1,21 @@
 
 import React, { useState } from 'react';
-import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogFooter } from '@/components/ui/dialog';
-import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
-import { Input } from '@/components/ui/input';
+import { Dialog, DialogContent, DialogDescription, DialogFooter, DialogHeader, DialogTitle } from '@/components/ui/dialog';
 import { Button } from '@/components/ui/button';
+import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
-import { Textarea } from '@/components/ui/textarea';
-import { Check, Plus, Trash2 } from 'lucide-react';
-import { useToast } from '@/hooks/use-toast';
-import { purchaseOrders } from '@/data/procurement/purchaseOrders';
+import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { CreditNoteReason } from '@/data/procurement/creditNotes';
+import { purchaseOrders } from '@/data/procurement/purchaseOrders';
+import { stockItems } from '@/data/procurement/stockItems';
+import { Textarea } from '@/components/ui/textarea';
+import { Form, FormControl, FormField, FormItem, FormLabel, FormMessage } from '@/components/ui/form';
+import { zodResolver } from '@hookform/resolvers/zod';
+import { useForm } from 'react-hook-form';
+import * as z from 'zod';
+import { useToast } from '@/hooks/use-toast';
+import InvoiceScanner from './InvoiceScanner';
 
 interface CreateCreditNoteProps {
   isOpen: boolean;
@@ -17,282 +23,350 @@ interface CreateCreditNoteProps {
   onSubmit: () => void;
 }
 
+const creditNoteReasons: CreditNoteReason[] = [
+  'Damaged Goods',
+  'Incorrect Items',
+  'Price Discrepancy',
+  'Quality Issues',
+  'Returned Items',
+  'Other'
+];
+
+const formSchema = z.object({
+  purchaseOrderId: z.string().min(1, "Please select a purchase order"),
+  supplierRef: z.string().min(1, "Supplier reference is required"),
+  items: z.array(z.object({
+    itemId: z.string().min(1, "Please select an item"),
+    quantity: z.number().min(1, "Quantity must be at least 1"),
+    price: z.number().min(0.01, "Price must be greater than 0"),
+    reason: z.enum(['Damaged Goods', 'Incorrect Items', 'Price Discrepancy', 'Quality Issues', 'Returned Items', 'Other'] as const),
+    notes: z.string().optional(),
+  })).min(1, "At least one item is required"),
+  notes: z.string().optional(),
+});
+
+type FormValues = z.infer<typeof formSchema>;
+
 const CreateCreditNote: React.FC<CreateCreditNoteProps> = ({ isOpen, onClose, onSubmit }) => {
-  const [selectedPO, setSelectedPO] = useState('');
-  const [notes, setNotes] = useState('');
-  const [items, setItems] = useState<Array<{
-    itemId: string;
-    name: string;
-    quantity: number;
-    price: number;
-    reason: CreditNoteReason | '';
-    notes: string;
-  }>>([]);
-  
+  const [activeTab, setActiveTab] = useState<string>('manual');
   const { toast } = useToast();
   
-  const selectedPOData = purchaseOrders.find(po => po.id === selectedPO);
-  
-  const resetForm = () => {
-    setSelectedPO('');
-    setNotes('');
-    setItems([]);
-  };
-  
-  const handleAddItem = () => {
-    if (!selectedPOData) return;
-    
-    setItems([
-      ...items,
-      {
+  const form = useForm<FormValues>({
+    resolver: zodResolver(formSchema),
+    defaultValues: {
+      purchaseOrderId: '',
+      supplierRef: '',
+      items: [{
         itemId: '',
-        name: '',
         quantity: 1,
         price: 0,
-        reason: '',
-        notes: ''
-      }
-    ]);
-  };
-  
-  const handleRemoveItem = (index: number) => {
-    setItems(items.filter((_, i) => i !== index));
-  };
-  
-  const handleItemChange = (index: number, field: string, value: any) => {
-    const newItems = [...items];
-    
-    if (field === 'itemId' && selectedPOData) {
-      const poItem = selectedPOData.items.find(item => item.item.id === value);
-      if (poItem) {
-        newItems[index] = {
-          ...newItems[index],
-          itemId: value,
-          name: poItem.item.name,
-          price: poItem.price
-        };
-      }
-    } else {
-      // @ts-ignore - we know the field exists
-      newItems[index][field] = value;
-    }
-    
-    setItems(newItems);
-  };
-  
-  const handleSubmit = () => {
-    if (!selectedPO) {
-      toast({
-        title: "Error",
-        description: "Please select a purchase order",
-        variant: "destructive"
-      });
-      return;
-    }
-    
-    if (items.length === 0) {
-      toast({
-        title: "Error",
-        description: "Please add at least one item",
-        variant: "destructive"
-      });
-      return;
-    }
-    
-    for (const item of items) {
-      if (!item.itemId || !item.reason) {
-        toast({
-          title: "Error",
-          description: "Please complete all item details",
-          variant: "destructive"
+        reason: 'Damaged Goods',
+        notes: '',
+      }],
+      notes: '',
+    },
+  });
+
+  const handleOCRResult = (result: any) => {
+    // Map the OCR result to the form values
+    if (result) {
+      // First, try to match the supplier with a purchase order
+      const matchedPO = purchaseOrders.find(po => 
+        po.supplier.name.toLowerCase().includes((result.supplier || '').toLowerCase())
+      );
+      
+      // Update form with extracted data
+      form.setValue('purchaseOrderId', matchedPO?.id || '');
+      form.setValue('supplierRef', result.invoice_number || '');
+      
+      // Handle items if available
+      if (result.items && result.items.length > 0) {
+        const formattedItems = result.items.map((item: any) => {
+          // Try to match the item description with a stock item
+          const matchedItem = stockItems.find(si => 
+            si.name.toLowerCase().includes((item.description || '').toLowerCase())
+          );
+          
+          return {
+            itemId: matchedItem?.id || '',
+            quantity: item.quantity || 1,
+            price: item.unit_price || 0,
+            reason: 'Price Discrepancy' as CreditNoteReason,
+            notes: item.description || '',
+          };
         });
-        return;
+        
+        form.setValue('items', formattedItems);
       }
+      
+      // Switch to manual tab to review and edit the extracted data
+      setActiveTab('manual');
+      
+      toast({
+        title: 'Invoice data loaded',
+        description: 'Please review and edit the data as needed',
+      });
     }
-    
+  };
+
+  const handleFormSubmit = (values: FormValues) => {
+    console.log('Credit Note Form Values:', values);
+    // Here you would normally process the form data, such as sending it to an API
     toast({
-      title: "Credit note created",
-      description: "The credit note has been created successfully"
+      title: 'Credit note created',
+      description: 'The credit note has been successfully created',
     });
-    
-    resetForm();
     onSubmit();
   };
-  
-  const calculateTotal = () => {
-    return items.reduce((total, item) => total + (item.quantity * item.price), 0);
-  };
-  
+
   return (
     <Dialog open={isOpen} onOpenChange={(open) => !open && onClose()}>
       <DialogContent className="max-w-2xl max-h-[90vh] overflow-y-auto">
         <DialogHeader>
-          <DialogTitle className="text-xl">Create Credit Note</DialogTitle>
+          <DialogTitle>Create Credit Note</DialogTitle>
+          <DialogDescription>
+            Fill in the details to create a new credit note, or scan an invoice.
+          </DialogDescription>
         </DialogHeader>
         
-        <div className="space-y-5 py-4">
-          <div className="space-y-3">
-            <Label htmlFor="po-select">Select Purchase Order</Label>
-            <Select value={selectedPO} onValueChange={setSelectedPO}>
-              <SelectTrigger id="po-select">
-                <SelectValue placeholder="Select a purchase order" />
-              </SelectTrigger>
-              <SelectContent>
-                {purchaseOrders.map(po => (
-                  <SelectItem key={po.id} value={po.id}>
-                    {po.id} - {po.supplier.name} (${po.totalAmount.toFixed(2)})
-                  </SelectItem>
-                ))}
-              </SelectContent>
-            </Select>
-          </div>
+        <Tabs value={activeTab} onValueChange={setActiveTab} className="w-full">
+          <TabsList className="grid w-full grid-cols-2">
+            <TabsTrigger value="manual">Manual Entry</TabsTrigger>
+            <TabsTrigger value="scan">Scan Invoice</TabsTrigger>
+          </TabsList>
           
-          {selectedPO && (
-            <>
-              <div className="space-y-3">
-                <div className="flex justify-between items-center">
-                  <Label>Credit Note Items</Label>
-                  <Button 
-                    type="button" 
-                    size="sm" 
-                    onClick={handleAddItem}
-                    className="flex items-center gap-1"
+          <TabsContent value="manual" className="py-4">
+            <Form {...form}>
+              <form onSubmit={form.handleSubmit(handleFormSubmit)} className="space-y-6">
+                <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                  <FormField
+                    control={form.control}
+                    name="purchaseOrderId"
+                    render={({ field }) => (
+                      <FormItem>
+                        <FormLabel>Purchase Order</FormLabel>
+                        <Select 
+                          onValueChange={field.onChange} 
+                          defaultValue={field.value}
+                        >
+                          <FormControl>
+                            <SelectTrigger>
+                              <SelectValue placeholder="Select a purchase order" />
+                            </SelectTrigger>
+                          </FormControl>
+                          <SelectContent>
+                            {purchaseOrders.map((po) => (
+                              <SelectItem key={po.id} value={po.id}>
+                                {po.id} - {po.supplier.name}
+                              </SelectItem>
+                            ))}
+                          </SelectContent>
+                        </Select>
+                        <FormMessage />
+                      </FormItem>
+                    )}
+                  />
+                  
+                  <FormField
+                    control={form.control}
+                    name="supplierRef"
+                    render={({ field }) => (
+                      <FormItem>
+                        <FormLabel>Supplier Reference</FormLabel>
+                        <FormControl>
+                          <Input {...field} placeholder="e.g., INV-12345" />
+                        </FormControl>
+                        <FormMessage />
+                      </FormItem>
+                    )}
+                  />
+                </div>
+                
+                <div className="space-y-4">
+                  <Label>Items</Label>
+                  {form.watch('items').map((_, index) => (
+                    <div key={index} className="border border-kitchen-border p-4 rounded-md space-y-4">
+                      <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                        <FormField
+                          control={form.control}
+                          name={`items.${index}.itemId`}
+                          render={({ field }) => (
+                            <FormItem>
+                              <FormLabel>Item</FormLabel>
+                              <Select 
+                                onValueChange={field.onChange} 
+                                defaultValue={field.value}
+                              >
+                                <FormControl>
+                                  <SelectTrigger>
+                                    <SelectValue placeholder="Select an item" />
+                                  </SelectTrigger>
+                                </FormControl>
+                                <SelectContent>
+                                  {stockItems.map((item) => (
+                                    <SelectItem key={item.id} value={item.id}>
+                                      {item.name}
+                                    </SelectItem>
+                                  ))}
+                                </SelectContent>
+                              </Select>
+                              <FormMessage />
+                            </FormItem>
+                          )}
+                        />
+                        
+                        <FormField
+                          control={form.control}
+                          name={`items.${index}.reason`}
+                          render={({ field }) => (
+                            <FormItem>
+                              <FormLabel>Reason</FormLabel>
+                              <Select 
+                                onValueChange={field.onChange} 
+                                defaultValue={field.value}
+                              >
+                                <FormControl>
+                                  <SelectTrigger>
+                                    <SelectValue placeholder="Select a reason" />
+                                  </SelectTrigger>
+                                </FormControl>
+                                <SelectContent>
+                                  {creditNoteReasons.map((reason) => (
+                                    <SelectItem key={reason} value={reason}>
+                                      {reason}
+                                    </SelectItem>
+                                  ))}
+                                </SelectContent>
+                              </Select>
+                              <FormMessage />
+                            </FormItem>
+                          )}
+                        />
+                      </div>
+                      
+                      <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                        <FormField
+                          control={form.control}
+                          name={`items.${index}.quantity`}
+                          render={({ field }) => (
+                            <FormItem>
+                              <FormLabel>Quantity</FormLabel>
+                              <FormControl>
+                                <Input 
+                                  type="number" 
+                                  min="1" 
+                                  step="1" 
+                                  onChange={e => field.onChange(parseInt(e.target.value) || 0)}
+                                  value={field.value} 
+                                />
+                              </FormControl>
+                              <FormMessage />
+                            </FormItem>
+                          )}
+                        />
+                        
+                        <FormField
+                          control={form.control}
+                          name={`items.${index}.price`}
+                          render={({ field }) => (
+                            <FormItem>
+                              <FormLabel>Price</FormLabel>
+                              <FormControl>
+                                <Input 
+                                  type="number" 
+                                  min="0.01" 
+                                  step="0.01"
+                                  onChange={e => field.onChange(parseFloat(e.target.value) || 0)}
+                                  value={field.value} 
+                                />
+                              </FormControl>
+                              <FormMessage />
+                            </FormItem>
+                          )}
+                        />
+                      </div>
+                      
+                      <FormField
+                        control={form.control}
+                        name={`items.${index}.notes`}
+                        render={({ field }) => (
+                          <FormItem>
+                            <FormLabel>Notes</FormLabel>
+                            <FormControl>
+                              <Textarea {...field} placeholder="Additional details about this item" />
+                            </FormControl>
+                            <FormMessage />
+                          </FormItem>
+                        )}
+                      />
+                      
+                      {index > 0 && (
+                        <Button
+                          type="button"
+                          variant="outline"
+                          className="w-full border-kitchen-danger text-kitchen-danger"
+                          onClick={() => {
+                            const currentItems = form.getValues().items;
+                            form.setValue('items', currentItems.filter((_, i) => i !== index));
+                          }}
+                        >
+                          Remove Item
+                        </Button>
+                      )}
+                    </div>
+                  ))}
+                  
+                  <Button
+                    type="button"
+                    variant="outline"
+                    onClick={() => {
+                      const currentItems = form.getValues().items;
+                      form.setValue('items', [
+                        ...currentItems,
+                        {
+                          itemId: '',
+                          quantity: 1,
+                          price: 0,
+                          reason: 'Damaged Goods',
+                          notes: '',
+                        }
+                      ]);
+                    }}
                   >
-                    <Plus className="h-4 w-4" /> Add Item
+                    Add Another Item
                   </Button>
                 </div>
                 
-                {items.length === 0 ? (
-                  <div className="text-kitchen-muted-foreground text-center py-4 border rounded-md">
-                    No items added. Click 'Add Item' to begin.
-                  </div>
-                ) : (
-                  <div className="space-y-4">
-                    {items.map((item, index) => (
-                      <div key={index} className="p-3 border rounded-md space-y-3">
-                        <div className="flex justify-between">
-                          <Label className="text-base">Item {index + 1}</Label>
-                          <Button 
-                            type="button" 
-                            size="sm" 
-                            variant="ghost"
-                            onClick={() => handleRemoveItem(index)}
-                            className="h-8 w-8 p-0 text-kitchen-danger"
-                          >
-                            <Trash2 className="h-4 w-4" />
-                          </Button>
-                        </div>
-                        
-                        <div className="grid grid-cols-1 md:grid-cols-2 gap-3">
-                          <div>
-                            <Label htmlFor={`item-${index}`}>Item</Label>
-                            <Select 
-                              value={item.itemId} 
-                              onValueChange={(value) => handleItemChange(index, 'itemId', value)}
-                            >
-                              <SelectTrigger id={`item-${index}`}>
-                                <SelectValue placeholder="Select an item" />
-                              </SelectTrigger>
-                              <SelectContent>
-                                {selectedPOData?.items.map(poItem => (
-                                  <SelectItem key={poItem.item.id} value={poItem.item.id}>
-                                    {poItem.item.name} (${poItem.price.toFixed(2)})
-                                  </SelectItem>
-                                ))}
-                              </SelectContent>
-                            </Select>
-                          </div>
-                          
-                          <div>
-                            <Label htmlFor={`quantity-${index}`}>Quantity</Label>
-                            <Input
-                              id={`quantity-${index}`}
-                              type="number"
-                              min="1"
-                              value={item.quantity}
-                              onChange={(e) => handleItemChange(index, 'quantity', parseInt(e.target.value) || 0)}
-                            />
-                          </div>
-                          
-                          <div>
-                            <Label htmlFor={`reason-${index}`}>Reason</Label>
-                            <Select 
-                              value={item.reason} 
-                              onValueChange={(value) => handleItemChange(index, 'reason', value)}
-                            >
-                              <SelectTrigger id={`reason-${index}`}>
-                                <SelectValue placeholder="Select a reason" />
-                              </SelectTrigger>
-                              <SelectContent>
-                                <SelectItem value="Damaged Goods">Damaged Goods</SelectItem>
-                                <SelectItem value="Incorrect Items">Incorrect Items</SelectItem>
-                                <SelectItem value="Price Discrepancy">Price Discrepancy</SelectItem>
-                                <SelectItem value="Quality Issues">Quality Issues</SelectItem>
-                                <SelectItem value="Returned Items">Returned Items</SelectItem>
-                                <SelectItem value="Other">Other</SelectItem>
-                              </SelectContent>
-                            </Select>
-                          </div>
-                          
-                          <div>
-                            <Label htmlFor={`price-${index}`}>Unit Price</Label>
-                            <Input
-                              id={`price-${index}`}
-                              type="number"
-                              step="0.01"
-                              value={item.price}
-                              onChange={(e) => handleItemChange(index, 'price', parseFloat(e.target.value) || 0)}
-                            />
-                          </div>
-                          
-                          <div className="md:col-span-2">
-                            <Label htmlFor={`item-notes-${index}`}>Item Notes</Label>
-                            <Textarea
-                              id={`item-notes-${index}`}
-                              placeholder="Add notes about this item..."
-                              value={item.notes}
-                              onChange={(e) => handleItemChange(index, 'notes', e.target.value)}
-                              className="h-20 resize-none"
-                            />
-                          </div>
-                        </div>
-                        
-                        <div className="text-right font-medium">
-                          Subtotal: ${(item.quantity * item.price).toFixed(2)}
-                        </div>
-                      </div>
-                    ))}
-                    
-                    <div className="flex justify-end p-3 bg-kitchen-muted/10 rounded-md">
-                      <div className="text-lg font-medium">
-                        Total: ${calculateTotal().toFixed(2)}
-                      </div>
-                    </div>
-                  </div>
-                )}
-              </div>
-              
-              <div className="space-y-2">
-                <Label htmlFor="notes">Additional Notes</Label>
-                <Textarea
-                  id="notes"
-                  placeholder="Add notes about this credit note..."
-                  value={notes}
-                  onChange={(e) => setNotes(e.target.value)}
-                  className="h-24 resize-none"
+                <FormField
+                  control={form.control}
+                  name="notes"
+                  render={({ field }) => (
+                    <FormItem>
+                      <FormLabel>Additional Notes</FormLabel>
+                      <FormControl>
+                        <Textarea {...field} placeholder="Any additional information about this credit note" />
+                      </FormControl>
+                      <FormMessage />
+                    </FormItem>
+                  )}
                 />
-              </div>
-            </>
-          )}
-        </div>
-        
-        <DialogFooter>
-          <Button variant="outline" onClick={onClose}>Cancel</Button>
-          <Button onClick={handleSubmit}>
-            <Check className="mr-2 h-4 w-4" />
-            Create Credit Note
-          </Button>
-        </DialogFooter>
+                
+                <DialogFooter>
+                  <Button type="button" variant="outline" onClick={onClose}>
+                    Cancel
+                  </Button>
+                  <Button type="submit" className="bg-kitchen-primary hover:bg-kitchen-primary/90">
+                    Create Credit Note
+                  </Button>
+                </DialogFooter>
+              </form>
+            </Form>
+          </TabsContent>
+          
+          <TabsContent value="scan" className="py-4">
+            <InvoiceScanner onScanComplete={handleOCRResult} />
+          </TabsContent>
+        </Tabs>
       </DialogContent>
     </Dialog>
   );

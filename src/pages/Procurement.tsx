@@ -1,3 +1,4 @@
+
 import React from 'react';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import ProcurementTable from '@/components/procurement/ProcurementTable';
@@ -12,20 +13,26 @@ import SupplierOnboarding from '@/components/procurement/SupplierOnboarding';
 import ComplianceAudits from '@/components/procurement/ComplianceAudits';
 import SupplierAdvanced from '@/components/procurement/SupplierAdvanced';
 import CreditNoteManagement from '@/components/procurement/CreditNoteManagement';
+import InvoiceManagement from '@/components/procurement/InvoiceManagement';
 import { suppliers } from '@/data/procurement/suppliers';
+import DashboardLayout from '@/components/shared/DashboardLayout';
 
 const Procurement: React.FC = () => {
   return (
-    <div className="space-y-8 animate-fade-in pb-12">
-      <div>
-        <h1 className="text-3xl font-semibold">Procurement <span className="text-sm bg-kitchen-primary text-white px-2 py-0.5 rounded-full ml-2">{suppliers.length}</span></h1>
-        <p className="text-kitchen-muted-foreground mt-1">Manage purchase orders, deliveries, suppliers, and inventory ordering</p>
+    <DashboardLayout
+      title="Procurement"
+      description="Manage purchase orders, deliveries, suppliers, and inventory ordering"
+      className="pb-12"
+    >
+      <div className="inline-flex items-center bg-kitchen-primary text-white px-2 py-0.5 rounded-full ml-2 text-sm">
+        {suppliers.length}
       </div>
       
       <Tabs defaultValue="ordering" className="w-full">
         <TabsList className="bg-kitchen-muted">
           <TabsTrigger value="ordering">Supplier Ordering</TabsTrigger>
           <TabsTrigger value="po-approval">PO Approval</TabsTrigger>
+          <TabsTrigger value="invoices">Invoices</TabsTrigger>
           <TabsTrigger value="suppliers">Suppliers</TabsTrigger>
           <TabsTrigger value="supplier-advanced">Supplier Advanced</TabsTrigger>
           <TabsTrigger value="inventory">Inventory</TabsTrigger>
@@ -61,6 +68,11 @@ const Procurement: React.FC = () => {
           </Tabs>
         </TabsContent>
 
+        {/* Invoices Tab - NEW */}
+        <TabsContent value="invoices" className="pt-4">
+          <InvoiceManagement />
+        </TabsContent>
+
         {/* Suppliers Tab */}
         <TabsContent value="suppliers" className="pt-4">
           <Tabs defaultValue="list" className="w-full">
@@ -81,7 +93,7 @@ const Procurement: React.FC = () => {
           </Tabs>
         </TabsContent>
 
-        {/* Supplier Advanced Tab - NEW */}
+        {/* Supplier Advanced Tab */}
         <TabsContent value="supplier-advanced" className="pt-4">
           <SupplierAdvanced />
         </TabsContent>
@@ -111,7 +123,7 @@ const Procurement: React.FC = () => {
           <ComplianceAudits />
         </TabsContent>
       </Tabs>
-    </div>
+    </DashboardLayout>
   );
 };
 

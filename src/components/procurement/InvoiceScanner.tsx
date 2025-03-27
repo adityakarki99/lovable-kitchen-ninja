@@ -1,3 +1,4 @@
+
 import React, { useState } from 'react';
 import { Button } from '@/components/ui/button';
 import { FileSearch, Upload } from 'lucide-react';
@@ -74,8 +75,8 @@ const InvoiceScanner: React.FC<InvoiceScannerProps> = ({ onScanComplete }) => {
               accept=".pdf,.jpg,.jpeg,.png"
               onChange={handleFileChange}
             />
-            <label htmlFor="invoice-upload">
-              <Button as="span" className="cursor-pointer">
+            <label htmlFor="invoice-upload" className="cursor-pointer">
+              <Button className="cursor-pointer">
                 <Upload className="mr-2 h-4 w-4" />
                 Select Invoice
               </Button>

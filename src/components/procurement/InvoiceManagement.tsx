@@ -1,70 +1,55 @@
 
 import React, { useState } from 'react';
-import { Plus, FileSearch } from 'lucide-react';
-import { Button } from '@/components/ui/button';
+import InvoiceScanner from './invoice/InvoiceScanner';
 import InvoiceList from './InvoiceList';
 import InvoiceDetails from './InvoiceDetails';
-import { Dialog, DialogContent, DialogHeader, DialogTitle } from '@/components/ui/dialog';
-import InvoiceScanner from './InvoiceScanner';
-import { useToast } from '@/hooks/use-toast';
-import DashboardLayout from '../shared/DashboardLayout';
 
-const InvoiceManagement: React.FC = () => {
-  const [selectedInvoiceId, setSelectedInvoiceId] = useState<string | null>(null);
-  const [isUploadDialogOpen, setIsUploadDialogOpen] = useState(false);
-  const { toast } = useToast();
+const InvoiceManagement = () => {
+  const [view, setView] = useState<'list' | 'details' | 'upload'>('list');
+  const [selectedInvoice, setSelectedInvoice] = useState<string>('');
   
-  const handleSelectInvoice = (id: string) => {
-    setSelectedInvoiceId(id);
-  };
-  
-  const handleBack = () => {
-    setSelectedInvoiceId(null);
+  const handleInvoiceSelect = (id: string) => {
+    setSelectedInvoice(id);
+    setView('details');
   };
   
   const handleUploadInvoice = () => {
-    setIsUploadDialogOpen(true);
+    setView('upload');
   };
   
   const handleScanComplete = (result: any) => {
-    console.log('Scan result:', result);
-    setIsUploadDialogOpen(false);
-    
-    toast({
-      title: 'Invoice scanned successfully',
-      description: 'The invoice has been processed',
-    });
-    
-    // In a real application, you would save the invoice data to the database
-    // and then redirect to the invoice details page
+    console.log('Scan completed:', result);
+    setView('list');
+    // Here you would typically save the invoice and update the list
+  };
+  
+  const handleBack = () => {
+    setView('list');
   };
   
   return (
-    <DashboardLayout
-      title="Invoice Management"
-      description="View, upload, and manage invoices with OCR scanning capabilities"
-    >
-      {selectedInvoiceId ? (
-        <InvoiceDetails 
-          invoiceId={selectedInvoiceId} 
-          onBack={handleBack} 
-        />
-      ) : (
+    <div className="space-y-6">
+      {view === 'list' && (
         <InvoiceList 
-          onSelectInvoice={handleSelectInvoice} 
-          onUploadInvoice={handleUploadInvoice} 
+          onSelectInvoice={handleInvoiceSelect} 
+          onUploadInvoice={handleUploadInvoice}
         />
       )}
       
-      <Dialog open={isUploadDialogOpen} onOpenChange={setIsUploadDialogOpen}>
-        <DialogContent className="max-w-2xl">
-          <DialogHeader>
-            <DialogTitle>Scan and Upload Invoice</DialogTitle>
-          </DialogHeader>
+      {view === 'details' && (
+        <InvoiceDetails 
+          invoiceId={selectedInvoice} 
+          onBack={handleBack}
+        />
+      )}
+      
+      {view === 'upload' && (
+        <>
+          <h2 className="text-xl font-semibold mb-4">Scan Invoice</h2>
           <InvoiceScanner onScanComplete={handleScanComplete} />
-        </DialogContent>
-      </Dialog>
-    </DashboardLayout>
+        </>
+      )}
+    </div>
   );
 };
 

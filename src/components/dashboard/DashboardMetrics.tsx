@@ -1,46 +1,47 @@
 
 import React from 'react';
 import { ChefHat, AlertTriangle, ShoppingCart, DollarSign } from 'lucide-react';
-import DashboardCard from './DashboardCard';
+import MetricsCard from '@/components/shared/metrics/MetricsCard';
+import MetricsCardGrid from '@/components/shared/metrics/MetricsCardGrid';
 
 const DashboardMetrics: React.FC = () => {
   return (
-    <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4 animate-slide-up">
-      <DashboardCard 
-        title="Total Recipes" 
-        value="125" 
-        icon={<ChefHat className="h-4 w-4" />} 
+    <MetricsCardGrid className="animate-slide-up">
+      <MetricsCard
+        title="Total Recipes"
+        value="125"
         description="5 new this week"
+        icon={<ChefHat />}
         trend={{ value: 4, isPositive: true }}
-        variant="primary"
+        className="bg-gradient-to-br from-kitchen-primary/10 to-kitchen-primary/5 border-kitchen-primary/20"
       />
       
-      <DashboardCard 
-        title="Low Stock Alerts" 
-        value="3" 
-        icon={<AlertTriangle className="h-4 w-4" />} 
+      <MetricsCard
+        title="Low Stock Alerts"
+        value="3"
         description="Tomatoes (5kg remaining)"
-        variant="warning"
+        icon={<AlertTriangle />}
+        className="bg-gradient-to-br from-kitchen-warning/10 to-kitchen-warning/5 border-kitchen-warning/20"
       />
       
-      <DashboardCard 
-        title="Pending Purchase Orders" 
-        value="15" 
-        icon={<ShoppingCart className="h-4 w-4" />} 
+      <MetricsCard
+        title="Pending Purchase Orders"
+        value="15"
         description="4 awaiting approval"
+        icon={<ShoppingCart />}
         trend={{ value: 20, isPositive: true }}
-        variant="success"
+        className="bg-gradient-to-br from-kitchen-success/10 to-kitchen-success/5 border-kitchen-success/20"
       />
       
-      <DashboardCard 
-        title="Budget Remaining" 
-        value="$61,529.68" 
-        icon={<DollarSign className="h-4 w-4" />} 
+      <MetricsCard
+        title="Budget Remaining"
+        value="$61,529.68"
         description="Under monthly target"
+        icon={<DollarSign />}
         trend={{ value: 8, isPositive: false }}
-        variant="danger"
+        className="bg-gradient-to-br from-kitchen-danger/10 to-kitchen-danger/5 border-kitchen-danger/20"
       />
-    </div>
+    </MetricsCardGrid>
   );
 };
 

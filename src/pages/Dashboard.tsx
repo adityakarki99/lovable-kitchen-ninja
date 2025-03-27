@@ -1,15 +1,12 @@
-
 import React, { useState } from 'react';
-import { PlusCircle, ShoppingCart, PackageCheck, DollarSign } from 'lucide-react';
-import DashboardMetrics from '@/components/dashboard/DashboardMetrics';
-import DashboardChart from '@/components/dashboard/DashboardChart';
-import DashboardActionCard from '@/components/dashboard/DashboardActionCard';
-import { useNavigate } from 'react-router-dom';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import OwnerDashboard from '@/components/dashboard/roles/OwnerDashboard';
 import DutyManagerDashboard from '@/components/dashboard/roles/DutyManagerDashboard';
 import ChefDashboard from '@/components/dashboard/roles/ChefDashboard';
 import GeneralDashboard from '@/components/dashboard/roles/GeneralDashboard';
+import DashboardLayout from '@/components/shared/DashboardLayout';
+import { useNavigate } from 'react-router-dom';
+import { PlusCircle, ShoppingCart, PackageCheck, DollarSign } from 'lucide-react';
 
 const monthlySpendData = [
   { name: 'Jan', value: 19500 },
@@ -46,12 +43,10 @@ const Dashboard: React.FC = () => {
   };
 
   return (
-    <div className="space-y-8 animate-fade-in pb-12">
-      <div>
-        <h1 className="text-3xl font-semibold">Dashboard</h1>
-        <p className="text-kitchen-muted-foreground mt-1">Good morning, welcome back to your kitchen overview</p>
-      </div>
-      
+    <DashboardLayout
+      title="Dashboard"
+      description="Good morning, welcome back to your kitchen overview"
+    >
       <Tabs defaultValue="general" value={activeTab} onValueChange={setActiveTab} className="w-full">
         <TabsList className="grid w-full grid-cols-4 mb-8">
           <TabsTrigger value="owner">Owner/Manager</TabsTrigger>
@@ -82,7 +77,7 @@ const Dashboard: React.FC = () => {
           />
         </TabsContent>
       </Tabs>
-    </div>
+    </DashboardLayout>
   );
 };
 

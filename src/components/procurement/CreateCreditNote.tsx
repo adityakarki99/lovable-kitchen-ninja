@@ -1,4 +1,3 @@
-
 import React, { useState } from 'react';
 import { Dialog, DialogContent, DialogDescription, DialogFooter, DialogHeader, DialogTitle } from '@/components/ui/dialog';
 import { Button } from '@/components/ui/button';
@@ -15,7 +14,7 @@ import { zodResolver } from '@hookform/resolvers/zod';
 import { useForm } from 'react-hook-form';
 import * as z from 'zod';
 import { useToast } from '@/hooks/use-toast';
-import InvoiceScanner from './InvoiceScanner';
+import InvoiceScanner from '../invoice/InvoiceScanner';
 
 interface CreateCreditNoteProps {
   isOpen: boolean;
@@ -68,21 +67,16 @@ const CreateCreditNote: React.FC<CreateCreditNoteProps> = ({ isOpen, onClose, on
   });
 
   const handleOCRResult = (result: any) => {
-    // Map the OCR result to the form values
     if (result) {
-      // First, try to match the supplier with a purchase order
       const matchedPO = purchaseOrders.find(po => 
         po.supplier.name.toLowerCase().includes((result.supplier || '').toLowerCase())
       );
       
-      // Update form with extracted data
       form.setValue('purchaseOrderId', matchedPO?.id || '');
       form.setValue('supplierRef', result.invoice_number || '');
       
-      // Handle items if available
       if (result.items && result.items.length > 0) {
         const formattedItems = result.items.map((item: any) => {
-          // Try to match the item description with a stock item
           const matchedItem = stockItems.find(si => 
             si.name.toLowerCase().includes((item.description || '').toLowerCase())
           );
@@ -99,7 +93,6 @@ const CreateCreditNote: React.FC<CreateCreditNoteProps> = ({ isOpen, onClose, on
         form.setValue('items', formattedItems);
       }
       
-      // Switch to manual tab to review and edit the extracted data
       setActiveTab('manual');
       
       toast({
@@ -111,7 +104,6 @@ const CreateCreditNote: React.FC<CreateCreditNoteProps> = ({ isOpen, onClose, on
 
   const handleFormSubmit = (values: FormValues) => {
     console.log('Credit Note Form Values:', values);
-    // Here you would normally process the form data, such as sending it to an API
     toast({
       title: 'Credit note created',
       description: 'The credit note has been successfully created',

@@ -1,5 +1,5 @@
 
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { useToast } from '@/hooks/use-toast';
 import SupplierSelector from './SupplierSelector';
@@ -10,96 +10,23 @@ import ScheduledOrders from './ScheduledOrders';
 import PurchaseOrdersTable from './PurchaseOrdersTable';
 import ParLevelAlertsTab from './ParLevelAlertsTab';
 import SuppliersTab from './SuppliersTab';
+import CreateItemDialog from './dialogs/CreateItemDialog';
+import { Button } from '@/components/ui/button';
+import { Plus } from 'lucide-react';
 
-// Mock data for supplier orders
-const supplierOrders = [
-  { 
-    id: 'PO-2305', 
-    supplier: 'Fresh Produce Co.', 
-    dateOrdered: '2023-07-15', 
-    dateDelivery: '2023-07-18',
-    items: [
-      { name: 'Tomatoes', quantity: '50kg', price: 2.50 },
-      { name: 'Lettuce', quantity: '30kg', price: 3.20 }
-    ],
-    status: 'Delivered', 
-    totalCost: 445.18,
-    progress: 100
-  },
-  { 
-    id: 'PO-2304', 
-    supplier: 'Premium Meats', 
-    dateOrdered: '2023-07-14', 
-    dateDelivery: '2023-07-19',
-    items: [
-      { name: 'Chicken Breast', quantity: '20kg', price: 12.50 },
-      { name: 'Ground Beef', quantity: '15kg', price: 15.20 }
-    ],
-    status: 'Partially Delivered', 
-    totalCost: 1255.70,
-    progress: 70
-  },
-  { 
-    id: 'PO-2303', 
-    supplier: '1A Yarra Valley', 
-    dateOrdered: '2023-07-13', 
-    dateDelivery: '2023-07-16',
-    items: [
-      { name: 'Fish Fillets', quantity: '20kg', price: 18.25 },
-      { name: 'Beer Batter Mix', quantity: '10kg', price: 8.50 }
-    ],
-    status: 'Delayed', 
-    totalCost: 445.18,
-    progress: 0
-  },
-  { 
-    id: 'PO-2302', 
-    supplier: 'Global Spices', 
-    dateOrdered: '2023-07-12', 
-    dateDelivery: '2023-07-19',
-    items: [
-      { name: 'Paprika', quantity: '5kg', price: 22.40 },
-      { name: 'Black Pepper', quantity: '8kg', price: 18.90 }
-    ],
-    status: 'Pending Approval', 
-    totalCost: 320.80,
-    progress: 0
-  },
-  { 
-    id: 'PO-2301', 
-    supplier: 'Fresh Foods', 
-    dateOrdered: '2023-07-11', 
-    dateDelivery: '2023-07-14',
-    items: [
-      { name: 'Tomatoes', quantity: '50kg', price: 2.75 },
-      { name: 'Lettuce', quantity: '30kg', price: 3.50 }
-    ],
-    status: 'Delivered', 
-    totalCost: 507.08,
-    progress: 100
-  },
-];
-
-// Mock data for PAR level alerts
+// Mock data for PAR level alerts - will replace with real data later
 const parLevelAlerts = [
   { id: 1, name: 'Tomatoes', currentStock: '5kg', parLevel: '10kg', supplier: 'Fresh Foods', suggestedOrder: '10kg' },
   { id: 2, name: 'Onions', currentStock: '2kg', parLevel: '5kg', supplier: 'Fresh Produce Co.', suggestedOrder: '5kg' },
   { id: 3, name: 'Garlic', currentStock: '0.5kg', parLevel: '1kg', supplier: 'Global Spices', suggestedOrder: '2kg' },
 ];
 
-// Mock data for suppliers
-const suppliers = [
-  { id: 1, name: 'Fresh Produce Co.', type: 'Vegetables & Fruits', contact: '+1 555-123-4567', deliveryDays: 'Mon, Wed, Fri' },
-  { id: 2, name: 'Premium Meats', type: 'Meat & Poultry', contact: '+1 555-987-6543', deliveryDays: 'Tue, Thu' },
-  { id: 3, name: '1A Yarra Valley', type: 'Seafood & Specialty', contact: '+1 555-456-7890', deliveryDays: 'Wed, Sat' },
-  { id: 4, name: 'Global Spices', type: 'Spices & Dry Goods', contact: '+1 555-789-0123', deliveryDays: 'Mon, Thu' },
-  { id: 5, name: 'Fresh Foods', type: 'Vegetables & Fruits', contact: '+1 555-234-5678', deliveryDays: 'Tue, Fri' },
-];
-
 const SupplierOrdering: React.FC = () => {
   const [activeTab, setActiveTab] = useState('orders');
   const [selectedSupplier, setSelectedSupplier] = useState<number | null>(null);
   const [selectedItems, setSelectedItems] = useState<Array<{id: number, name: string, quantity: string, price: number}>>([]);
+  const [isCreateDialogOpen, setIsCreateDialogOpen] = useState(false);
+  const [createDialogDefaultTab, setCreateDialogDefaultTab] = useState<'supplier' | 'item'>('supplier');
   const { toast } = useToast();
   
   const createNewOrder = () => {
@@ -107,11 +34,18 @@ const SupplierOrdering: React.FC = () => {
       title: "New order created",
       description: "Your order has been created and sent for approval",
     });
+    
+    // Reset the order form
+    setSelectedItems([]);
+    setSelectedSupplier(null);
+    setActiveTab('orders');
   };
 
   const handleSupplierSelect = (supplierId: number) => {
     setSelectedSupplier(supplierId);
-    setActiveTab('new-order');
+    if (activeTab !== 'new-order') {
+      setActiveTab('new-order');
+    }
   };
 
   const handleAddItem = (item: {id: number, name: string, quantity: string, price: number}) => {
@@ -122,11 +56,50 @@ const SupplierOrdering: React.FC = () => {
     setSelectedItems(prev => prev.filter(item => item.id !== itemId));
   };
 
+  const handleOpenCreateDialog = (tab: 'supplier' | 'item') => {
+    setCreateDialogDefaultTab(tab);
+    setIsCreateDialogOpen(true);
+  };
+
+  const handleCreateSuccess = () => {
+    // Refresh data after successful creation
+    // We'll implement real data fetching later
+    
+    // Close the dialog
+    setIsCreateDialogOpen(false);
+    
+    // Show a success message
+    toast({
+      title: "Created successfully",
+      description: `The ${createDialogDefaultTab} was created successfully.`,
+    });
+  };
+
   return (
     <div className="space-y-6 animate-slide-up">
-      <div>
-        <h2 className="text-xl font-semibold">Unified Supplier Ordering Platform</h2>
-        <p className="text-kitchen-muted-foreground mt-1">Manage orders across multiple suppliers from a single interface</p>
+      <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between">
+        <div>
+          <h2 className="text-xl font-semibold">Unified Supplier Ordering Platform</h2>
+          <p className="text-kitchen-muted-foreground mt-1">Manage orders across multiple suppliers from a single interface</p>
+        </div>
+        <div className="flex gap-2 mt-2 sm:mt-0">
+          <Button 
+            variant="outline" 
+            className="text-kitchen-primary"
+            onClick={() => handleOpenCreateDialog('supplier')}
+          >
+            <Plus className="mr-2 h-4 w-4" />
+            New Supplier
+          </Button>
+          <Button 
+            variant="outline" 
+            className="text-kitchen-primary"
+            onClick={() => handleOpenCreateDialog('item')}
+          >
+            <Plus className="mr-2 h-4 w-4" />
+            New Item
+          </Button>
+        </div>
       </div>
 
       <Tabs value={activeTab} onValueChange={setActiveTab} className="w-full">
@@ -142,7 +115,6 @@ const SupplierOrdering: React.FC = () => {
         {/* Purchase Orders Tab */}
         <TabsContent value="orders" className="pt-4">
           <PurchaseOrdersTable 
-            orders={supplierOrders} 
             onCreateNewOrder={() => setActiveTab('new-order')}
             onSelectLineItemMatching={() => setActiveTab('line-item-matching')}
           />
@@ -158,9 +130,8 @@ const SupplierOrdering: React.FC = () => {
           <div className="grid grid-cols-1 lg:grid-cols-12 gap-4">
             <div className="lg:col-span-3">
               <SupplierSelector 
-                suppliers={suppliers} 
                 selectedSupplier={selectedSupplier} 
-                onSupplierSelect={handleSupplierSelect} 
+                onSupplierSelect={handleSupplierSelect}
               />
             </div>
             
@@ -195,11 +166,18 @@ const SupplierOrdering: React.FC = () => {
         {/* Suppliers Tab */}
         <TabsContent value="suppliers" className="pt-4">
           <SuppliersTab 
-            suppliers={suppliers} 
-            onSupplierSelect={handleSupplierSelect} 
+            onSupplierSelect={handleSupplierSelect}
+            onNewSupplier={() => handleOpenCreateDialog('supplier')}
           />
         </TabsContent>
       </Tabs>
+
+      <CreateItemDialog 
+        open={isCreateDialogOpen}
+        onOpenChange={setIsCreateDialogOpen}
+        defaultTab={createDialogDefaultTab}
+        onSuccess={handleCreateSuccess}
+      />
     </div>
   );
 };

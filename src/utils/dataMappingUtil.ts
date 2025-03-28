@@ -69,7 +69,7 @@ export const mapDbPurchaseOrderToUi = (dbPo: PurchaseOrder) => {
     requestor: dbPo.requestor || '',
     urgency: dbPo.urgency || 'Medium',
     budgetImpact: dbPo.budget_impact || 0,
-    age: '1d', // Would need logic to calculate
+    age: calculateAge(dbPo.date_ordered),
     notes: dbPo.notes || ''
   };
 };
@@ -115,6 +115,28 @@ export const mapDbInvoiceToUi = (dbInvoice: Invoice & { items?: InvoiceItem[] })
       price: item.unit_price,
       total: item.total_price
     })) : [],
-    total: dbInvoice.total_amount
+    total: dbInvoice.total_amount,
+    status: dbInvoice.status
   };
+};
+
+/**
+ * Calculate the age of a date relative to now
+ */
+const calculateAge = (date: string) => {
+  const now = new Date();
+  const orderDate = new Date(date);
+  const diffTime = Math.abs(now.getTime() - orderDate.getTime());
+  const diffDays = Math.floor(diffTime / (1000 * 60 * 60 * 24));
+  
+  if (diffDays === 0) {
+    const diffHours = Math.floor(diffTime / (1000 * 60 * 60));
+    if (diffHours === 0) {
+      const diffMinutes = Math.floor(diffTime / (1000 * 60));
+      return `${diffMinutes}m`;
+    }
+    return `${diffHours}h`;
+  }
+  
+  return `${diffDays}d`;
 };

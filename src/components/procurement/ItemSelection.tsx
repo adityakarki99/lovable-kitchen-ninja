@@ -1,3 +1,4 @@
+
 import React, { useState, useEffect } from 'react';
 import { Search, Plus, AlertCircle, Filter, ArrowUpDown } from 'lucide-react';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
@@ -44,7 +45,7 @@ const ItemSelection: React.FC<ItemSelectionProps> = ({
   const [quantities, setQuantities] = useState<Record<string, string>>({});
   const [loading, setLoading] = useState(true);
   const [sortBy, setSortBy] = useState<string | null>(null);
-  const [sortDirection, setSortDirection<'asc' | 'desc'>>('asc');
+  const [sortDirection, setSortDirection] = useState<'asc' | 'desc'>('asc');
   const { toast } = useToast();
 
   // Fetch stock items on component mount

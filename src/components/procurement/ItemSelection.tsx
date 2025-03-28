@@ -27,6 +27,7 @@ const ItemSelection: React.FC<ItemSelectionProps> = ({
   const [loading, setLoading] = useState(true);
   const [sortBy, setSortBy] = useState<string | null>(null);
   const [sortDirection, setSortDirection] = useState<'asc' | 'desc'>('asc');
+  const [viewMode, setViewMode] = useState<'list' | 'grid'>('list');
   const { toast } = useToast();
 
   // Fetch stock items on component mount
@@ -127,6 +128,8 @@ const ItemSelection: React.FC<ItemSelectionProps> = ({
               onQuantityChange={handleQuantityChange}
               onAddItem={handleAddItem}
               onSort={handleSort}
+              viewMode={viewMode}
+              onViewModeChange={setViewMode}
             />
           )
         ) : (

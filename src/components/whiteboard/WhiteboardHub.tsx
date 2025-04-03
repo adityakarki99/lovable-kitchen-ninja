@@ -1,4 +1,3 @@
-
 import React, { useState } from 'react';
 import { WhiteboardTemplate } from '@/components/whiteboard/types';
 import WhiteboardPanel from '@/components/whiteboard/WhiteboardPanel';
@@ -684,7 +683,7 @@ const WhiteboardHub: React.FC = () => {
     { id: 2, user: 'Sarah', action: 'commented on', board: 'Weekly Order Planner', time: '4 hours ago' },
     { id: 3, user: 'David', action: 'created', board: 'Quick Reorder Form', time: 'Yesterday' },
     { id: 4, user: 'Aisha', action: 'updated', board: 'Menu Development', time: '2 days ago' },
-    { id: 5, user: 'Kitchen Manager', action: 'approved', board: 'Weekly Order Planner', time: 'Today at 9:15am' },
+    { id: 5, user: 'Kitchen Manager', action: 'approved', board: 'Weekly Order Planner', time: 'Today at 9:15am' }
   ];
   
   if (activeBoard) {

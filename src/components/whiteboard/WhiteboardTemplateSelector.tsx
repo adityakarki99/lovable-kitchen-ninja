@@ -3,7 +3,8 @@ import React from 'react';
 import { Card, CardContent } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { WhiteboardTemplate } from './types';
-import { CalendarCheck, CheckSquare, ClipboardList, Menu, MessageSquare, X, ShoppingCart, Plus } from 'lucide-react';
+import { X } from 'lucide-react';
+import { getTemplateIcon } from './data/WhiteboardTemplates';
 
 interface WhiteboardTemplateSelectorProps {
   templates: WhiteboardTemplate[];
@@ -16,31 +17,6 @@ const WhiteboardTemplateSelector: React.FC<WhiteboardTemplateSelectorProps> = ({
   onSelectTemplate,
   onCancel
 }) => {
-  const getTemplateIcon = (id: string) => {
-    switch (id) {
-      case 'supplier-order':
-        return <ShoppingCart className="h-10 w-10 text-blue-500" />;
-      case 'weekly-order':
-        return <ClipboardList className="h-10 w-10 text-green-500" />;
-      case 'quick-reorder':
-        return <Plus className="h-10 w-10 text-amber-500" />;
-      case 'daily-ops':
-        return <ClipboardList className="h-10 w-10 text-teal-500" />;
-      case 'weekly-planning':
-        return <CalendarCheck className="h-10 w-10 text-green-500" />;
-      case 'training':
-        return <CheckSquare className="h-10 w-10 text-orange-500" />;
-      case 'menu-dev':
-        return <Menu className="h-10 w-10 text-red-500" />;
-      case 'message-board':
-        return <MessageSquare className="h-10 w-10 text-purple-500" />;
-      case 'to-dos':
-        return <CheckSquare className="h-10 w-10 text-teal-500" />;
-      default:
-        return <ClipboardList className="h-10 w-10 text-blue-500" />;
-    }
-  };
-
   const getColorClass = (id: string) => {
     switch (id) {
       case 'supplier-order': return 'border-blue-500';

@@ -1,4 +1,3 @@
-
 import React, { useState } from 'react';
 import { WhiteboardTemplate } from '@/components/whiteboard/types';
 import WhiteboardPanel from '@/components/whiteboard/WhiteboardPanel';
@@ -6,9 +5,43 @@ import WhiteboardTemplateSelector from '@/components/whiteboard/WhiteboardTempla
 import { Button } from '@/components/ui/button';
 import { Separator } from '@/components/ui/separator';
 import { Card, CardContent } from '@/components/ui/card';
-import { Plus, ArrowLeft, CheckSquare, CalendarCheck, ClipboardList, Menu, MessageSquare, Users } from 'lucide-react';
+import { Plus, ArrowLeft, CheckSquare, CalendarCheck, ClipboardList, Menu, MessageSquare, Users, ShoppingCart } from 'lucide-react';
 
 const TEMPLATES: WhiteboardTemplate[] = [
+  {
+    id: 'supplier-order',
+    name: 'Supplier Order Template',
+    description: 'Create and track supplier orders',
+    sections: [
+      { id: 'order-details', title: 'Order Details', type: 'text' },
+      { id: 'order-items', title: 'Order Items', type: 'table' },
+      { id: 'delivery-notes', title: 'Delivery Notes', type: 'text' },
+      { id: 'verification', title: 'Order Verification', type: 'checklist' }
+    ]
+  },
+  {
+    id: 'weekly-order',
+    name: 'Weekly Order Planner',
+    description: 'Plan weekly ordering across departments',
+    sections: [
+      { id: 'produce', title: 'Produce Order', type: 'text' },
+      { id: 'meat', title: 'Meat & Poultry', type: 'text' },
+      { id: 'seafood', title: 'Seafood', type: 'text' },
+      { id: 'dry-goods', title: 'Dry Goods', type: 'text' },
+      { id: 'beverage', title: 'Beverages', type: 'text' },
+      { id: 'verification', title: 'Order Checklist', type: 'checklist' }
+    ]
+  },
+  {
+    id: 'quick-reorder',
+    name: 'Quick Reorder Form',
+    description: 'Fast reordering of commonly used items',
+    sections: [
+      { id: 'urgent-items', title: 'Urgent Reorder Items', type: 'checklist' },
+      { id: 'quantities', title: 'Quantities', type: 'table' },
+      { id: 'notes', title: 'Special Instructions', type: 'text' }
+    ]
+  },
   {
     id: 'daily-ops',
     name: 'Daily Operations',
@@ -35,17 +68,6 @@ const TEMPLATES: WhiteboardTemplate[] = [
     ]
   },
   {
-    id: 'training',
-    name: 'Training Board',
-    description: 'Track staff training and skills',
-    sections: [
-      { id: 'trainees', title: 'Trainees', type: 'table' },
-      { id: 'skills', title: 'Required Skills', type: 'checklist' },
-      { id: 'materials', title: 'Training Materials', type: 'text' },
-      { id: 'feedback', title: 'Feedback', type: 'text' }
-    ]
-  },
-  {
     id: 'menu-dev',
     name: 'Menu Development',
     description: 'Collaborate on new menu items',
@@ -55,37 +77,21 @@ const TEMPLATES: WhiteboardTemplate[] = [
       { id: 'testing', title: 'Testing Notes', type: 'text' },
       { id: 'feedback', title: 'Feedback', type: 'text' }
     ]
-  },
-  {
-    id: 'message-board',
-    name: 'Message Board',
-    description: 'Team communication hub',
-    sections: [
-      { id: 'announcements', title: 'Announcements', type: 'text' },
-      { id: 'general', title: 'General Discussion', type: 'text' },
-      { id: 'ideas', title: 'Ideas & Suggestions', type: 'text' }
-    ]
-  },
-  {
-    id: 'to-dos',
-    name: 'To-Do Lists',
-    description: 'Manage tasks and assignments',
-    sections: [
-      { id: 'kitchen-prep', title: 'Kitchen Prep Tasks', type: 'checklist' },
-      { id: 'inventory', title: 'Inventory Tasks', type: 'checklist' },
-      { id: 'cleaning', title: 'Cleaning & Maintenance', type: 'checklist' }
-    ]
   }
 ];
 
 const getTemplateIcon = (id: string) => {
   switch (id) {
+    case 'supplier-order':
+      return <ShoppingCart className="h-8 w-8 text-blue-500" />;
+    case 'weekly-order':
+      return <ClipboardList className="h-8 w-8 text-green-500" />;
+    case 'quick-reorder':
+      return <Plus className="h-8 w-8 text-amber-500" />;
     case 'daily-ops':
-      return <ClipboardList className="h-8 w-8 text-blue-500" />;
+      return <ClipboardList className="h-8 w-8 text-teal-500" />;
     case 'weekly-planning':
       return <CalendarCheck className="h-8 w-8 text-green-500" />;
-    case 'training':
-      return <CheckSquare className="h-8 w-8 text-orange-500" />;
     case 'menu-dev':
       return <Menu className="h-8 w-8 text-red-500" />;
     case 'message-board':
@@ -98,7 +104,7 @@ const getTemplateIcon = (id: string) => {
 };
 
 const WhiteboardHub: React.FC = () => {
-  const [boards, setBoards] = useState<string[]>(['daily-ops', 'weekly-planning']);
+  const [boards, setBoards] = useState<string[]>(['supplier-order', 'weekly-order']);
   const [activeBoard, setActiveBoard] = useState<string | null>(null);
   const [showTemplateSelector, setShowTemplateSelector] = useState<boolean>(false);
   
@@ -117,14 +123,12 @@ const WhiteboardHub: React.FC = () => {
     setActiveBoard(null);
   };
 
-  // Basecamp-style activity stream
   const recentActivity = [
-    { id: 1, user: 'Alex', action: 'updated', board: 'Daily Operations', time: '2 hours ago' },
-    { id: 2, user: 'Jamie', action: 'commented on', board: 'Weekly Planning', time: 'Yesterday' },
-    { id: 3, user: 'Taylor', action: 'created', board: 'Menu Development', time: '2 days ago' },
+    { id: 1, user: 'Alex', action: 'updated', board: 'Supplier Order Template', time: '2 hours ago' },
+    { id: 2, user: 'Jamie', action: 'commented on', board: 'Weekly Order Planner', time: 'Yesterday' },
+    { id: 3, user: 'Taylor', action: 'created', board: 'Quick Reorder Form', time: '2 days ago' },
   ];
   
-  // If a specific board is active, show that board's panel
   if (activeBoard) {
     const template = TEMPLATES.find(t => t.id === activeBoard);
     
@@ -161,7 +165,7 @@ const WhiteboardHub: React.FC = () => {
             <div>
               <h2 className="text-2xl font-medium mb-1">Your Whiteboards</h2>
               <p className="text-kitchen-muted-foreground">
-                Collaborate with your team using digital whiteboards
+                Streamline ordering and collaboration with team whiteboards
               </p>
             </div>
             <Button onClick={() => setShowTemplateSelector(true)}>
@@ -178,10 +182,10 @@ const WhiteboardHub: React.FC = () => {
               return (
                 <Card 
                   key={boardId}
-                  className="hover:shadow-md transition-all duration-200 overflow-hidden"
+                  className="hover:shadow-md transition-all duration-200 overflow-hidden cursor-pointer"
                   onClick={() => handleOpenBoard(boardId)}
                 >
-                  <div className={`h-2 w-full bg-${boardId === 'daily-ops' ? 'blue' : boardId === 'weekly-planning' ? 'green' : boardId === 'training' ? 'orange' : boardId === 'menu-dev' ? 'red' : boardId === 'message-board' ? 'purple' : 'teal'}-500`} />
+                  <div className={`h-2 w-full bg-${boardId === 'supplier-order' ? 'blue' : boardId === 'weekly-order' ? 'green' : boardId === 'quick-reorder' ? 'amber' : boardId === 'daily-ops' ? 'teal' : boardId === 'weekly-planning' ? 'green' : boardId === 'menu-dev' ? 'red' : boardId === 'message-board' ? 'purple' : 'teal'}-500`} />
                   <CardContent className="p-6">
                     <div className="flex items-start justify-between mb-4">
                       {getTemplateIcon(boardId)}

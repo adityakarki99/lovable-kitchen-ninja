@@ -8,6 +8,7 @@ const Whiteboard = () => {
     <DashboardLayout 
       title="Kitchen Whiteboard"
       description="Collaborate and communicate with your team"
+      className="bg-gray-50"
     >
       <WhiteboardHub />
     </DashboardLayout>

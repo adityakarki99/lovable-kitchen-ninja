@@ -18,6 +18,7 @@ import NotFound from "./pages/NotFound";
 import Header from "./components/Header";
 import { Suspense } from "react";
 import FullScreenCreateOrder from "./components/procurement/FullScreenCreateOrder";
+import Whiteboard from "./pages/Whiteboard";
 
 const queryClient = new QueryClient();
 
@@ -117,6 +118,14 @@ const App = () => (
             element={
               <AppLayout>
                 <IntegrationHub />
+              </AppLayout>
+            } 
+          />
+          <Route 
+            path="/whiteboard" 
+            element={
+              <AppLayout>
+                <Whiteboard />
               </AppLayout>
             } 
           />

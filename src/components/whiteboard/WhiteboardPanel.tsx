@@ -1,11 +1,12 @@
 
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { WhiteboardTemplate } from './types';
 import WhiteboardSection from './WhiteboardSection';
 import { Card, CardContent } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Edit, Save, MessageSquare, Users } from 'lucide-react';
 import { Separator } from '@/components/ui/separator';
+import { useToast } from '@/hooks/use-toast';
 
 interface WhiteboardPanelProps {
   template: WhiteboardTemplate;
@@ -15,6 +16,18 @@ const WhiteboardPanel: React.FC<WhiteboardPanelProps> = ({ template }) => {
   const [isEditing, setIsEditing] = useState(false);
   const [sectionContents, setSectionContents] = useState<Record<string, any>>({});
   const [showComments, setShowComments] = useState(false);
+  const { toast } = useToast();
+  
+  useEffect(() => {
+    // Initialize section contents from template if available
+    const initialContents: Record<string, any> = {};
+    template.sections.forEach(section => {
+      if (section.content !== undefined) {
+        initialContents[section.id] = section.content;
+      }
+    });
+    setSectionContents(initialContents);
+  }, [template]);
   
   const handleSectionChange = (sectionId: string, content: any) => {
     setSectionContents(prev => ({
@@ -30,12 +43,19 @@ const WhiteboardPanel: React.FC<WhiteboardPanelProps> = ({ template }) => {
       sections: sectionContents
     });
     setIsEditing(false);
+    
+    toast({
+      title: "Whiteboard updated",
+      description: "Your changes have been saved successfully.",
+      duration: 3000,
+    });
   };
 
   // Mock comments data (would come from a database in a real app)
   const comments = [
-    { id: 1, user: 'Alex', text: 'Added the new menu items to the specials section.', time: '2 hours ago' },
-    { id: 2, user: 'Jamie', text: 'Can we discuss the staff assignments at the next meeting?', time: 'Yesterday' }
+    { id: 1, user: 'Chef Alex', text: 'Make sure we get the highest quality tomatoes for this weekend.', time: '2 hours ago' },
+    { id: 2, user: 'Jamie', text: 'I updated the quantities based on last week\'s usage.', time: 'Yesterday' },
+    { id: 3, user: 'Kitchen Manager', text: 'Order approved. Please send confirmation to supplier ASAP.', time: 'Today at 10:35 AM' }
   ];
   
   return (
@@ -54,7 +74,7 @@ const WhiteboardPanel: React.FC<WhiteboardPanelProps> = ({ template }) => {
             Comments
           </Button>
           <Button 
-            variant="outline"
+            variant={isEditing ? "default" : "outline"}
             onClick={() => isEditing ? handleSave() : setIsEditing(true)}
           >
             {isEditing ? (
@@ -76,7 +96,7 @@ const WhiteboardPanel: React.FC<WhiteboardPanelProps> = ({ template }) => {
         <div className="flex-1 space-y-6">
           {template.sections.map((section) => (
             <Card key={section.id} className="overflow-hidden">
-              <div className={`h-1 w-full bg-${template.id === 'daily-ops' ? 'blue' : template.id === 'weekly-planning' ? 'green' : template.id === 'training' ? 'orange' : template.id === 'menu-dev' ? 'red' : template.id === 'message-board' ? 'purple' : 'teal'}-500`} />
+              <div className={`h-1 w-full bg-${template.id === 'supplier-order' ? 'blue' : template.id === 'weekly-order' ? 'green' : template.id === 'quick-reorder' ? 'amber' : template.id === 'daily-ops' ? 'teal' : template.id === 'weekly-planning' ? 'green' : template.id === 'menu-dev' ? 'red' : 'teal'}-500`} />
               <CardContent className="p-6">
                 <WhiteboardSection
                   section={section}

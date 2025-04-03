@@ -3,7 +3,7 @@ import React from 'react';
 import { Checkbox } from '@/components/ui/checkbox';
 import { Input } from '@/components/ui/input';
 import { Button } from '@/components/ui/button';
-import { Plus, Trash, CheckSquare } from 'lucide-react';
+import { Plus, Trash, CheckSquare, AlertTriangle } from 'lucide-react';
 import { ChecklistItem } from '../types';
 import { Badge } from '@/components/ui/badge';
 
@@ -52,19 +52,35 @@ const ChecklistSection: React.FC<ChecklistSectionProps> = ({
     item.text.toLowerCase().includes('order')
   );
   
+  // Check if this is an urgent checklist
+  const isUrgentChecklist = items.some(item => 
+    item.text.toLowerCase().includes('urgent') ||
+    item.text.toLowerCase().includes('priority') ||
+    item.text.toLowerCase().includes('asap')
+  );
+  
   const completedCount = items.filter(item => item.completed).length;
   const totalCount = items.length;
   const progress = totalCount > 0 ? Math.round((completedCount / totalCount) * 100) : 0;
 
   return (
     <div className="space-y-2">
-      {isOrderVerification && (
+      {(isOrderVerification || isUrgentChecklist) && (
         <div className="flex items-center justify-between mb-3">
           <div className="flex items-center">
-            <CheckSquare className="h-4 w-4 mr-2 text-green-600" />
-            <span className="text-sm font-medium">Order Verification</span>
+            {isOrderVerification ? (
+              <>
+                <CheckSquare className="h-4 w-4 mr-2 text-green-600" />
+                <span className="text-sm font-medium">Order Verification</span>
+              </>
+            ) : (
+              <>
+                <AlertTriangle className="h-4 w-4 mr-2 text-amber-600" />
+                <span className="text-sm font-medium">Urgent Tasks</span>
+              </>
+            )}
           </div>
-          <Badge className={`${progress === 100 ? 'bg-green-100 text-green-800' : 'bg-amber-100 text-amber-800'}`}>
+          <Badge className={`${progress === 100 ? 'bg-green-100 text-green-800' : progress > 50 ? 'bg-amber-100 text-amber-800' : 'bg-red-100 text-red-800'}`}>
             {progress}% Complete
           </Badge>
         </div>
@@ -83,15 +99,20 @@ const ChecklistSection: React.FC<ChecklistSectionProps> = ({
             disabled={!isEditing}
             className={item.completed ? 'text-green-600' : ''}
           />
-          <Input
-            value={item.text}
-            onChange={(e) => handleTextChange(index, e.target.value)}
-            disabled={!isEditing}
-            placeholder="Task or item..."
-            className={`flex-1 ${
+          {isEditing ? (
+            <Input
+              value={item.text}
+              onChange={(e) => handleTextChange(index, e.target.value)}
+              placeholder="Task or item..."
+              className="flex-1"
+            />
+          ) : (
+            <div className={`flex-1 pl-2 ${
               item.completed ? 'line-through text-kitchen-muted-foreground' : ''
-            }`}
-          />
+            }`}>
+              {item.text}
+            </div>
+          )}
           {isEditing && (
             <Button
               size="icon"
@@ -116,10 +137,10 @@ const ChecklistSection: React.FC<ChecklistSectionProps> = ({
         </Button>
       )}
       
-      {isOrderVerification && items.length > 0 && !isEditing && (
+      {(isOrderVerification || isUrgentChecklist) && items.length > 0 && !isEditing && (
         <div className="h-2 w-full bg-kitchen-muted rounded-full mt-4 overflow-hidden">
           <div 
-            className={`h-full ${progress === 100 ? 'bg-green-500' : 'bg-amber-500'}`} 
+            className={`h-full ${progress === 100 ? 'bg-green-500' : progress > 50 ? 'bg-amber-500' : 'bg-red-500'}`} 
             style={{ width: `${progress}%` }}
           ></div>
         </div>

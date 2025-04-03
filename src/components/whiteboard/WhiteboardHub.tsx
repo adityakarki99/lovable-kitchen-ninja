@@ -1,3 +1,4 @@
+
 import React, { useState } from 'react';
 import { WhiteboardTemplate } from '@/components/whiteboard/types';
 import WhiteboardPanel from '@/components/whiteboard/WhiteboardPanel';
@@ -187,7 +188,7 @@ Date: Thursday delivery
         title: 'Order Checklist', 
         type: 'checklist',
         content: [
-          { id: '1', text: 'Review previous week's usage and adjust quantities', completed: true },
+          { id: '1', text: 'Review previous week\'s usage and adjust quantities', completed: true },
           { id: '2', text: 'Check upcoming events and adjust for increased demand', completed: true },
           { id: '3', text: 'Verify all departments have submitted requirements', completed: true },
           { id: '4', text: 'Compare against budget allocations', completed: false },

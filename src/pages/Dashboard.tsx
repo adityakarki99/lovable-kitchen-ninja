@@ -1,3 +1,4 @@
+
 import React, { useState } from 'react';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { Button } from "@/components/ui/button";
@@ -8,6 +9,9 @@ import MetricsGrid from '@/components/shared/metrics/MetricsGrid';
 import StandardBarChart from '@/components/shared/charts/StandardBarChart';
 import StandardPieChart from '@/components/shared/charts/StandardPieChart';
 import ChefHat from '@/components/icons/ChefHat';
+import ChefDashboard from '@/components/dashboard/roles/ChefDashboard';
+import DutyManagerDashboard from '@/components/dashboard/roles/DutyManagerDashboard';
+import OwnerDashboard from '@/components/dashboard/roles/OwnerDashboard';
 
 const monthlySpendData = [
   { name: 'Jan', value: 19500 },

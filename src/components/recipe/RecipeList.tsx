@@ -1,5 +1,7 @@
-
-import React, { ReactElement } from 'react';
+import React, { ReactElement, useState, useEffect } from 'react';
+import { Link, useNavigate } from 'react-router-dom';
+import { Search, Filter, PlusCircle, BarChart, List, Grid, Table as TableIcon } from 'lucide-react';
+import { Input } from '@/components/ui/input';
 import { Button } from '@/components/ui/button';
 import { Card } from '@/components/ui/card';
 import { Table, TableHeader, TableBody, TableHead, TableRow, TableCell } from '@/components/ui/table';
@@ -19,7 +21,6 @@ import {
   ResponsiveContainer 
 } from 'recharts';
 
-// Update ChartContainer to use more specific typing
 const ChartContainer = ({ 
   children, 
   config 

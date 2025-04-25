@@ -1,20 +1,24 @@
+
 import * as React from "react"
 import { cva, type VariantProps } from "class-variance-authority"
 
 import { cn } from "@/lib/utils"
 
+// Carbon Design System badges have specific styles and color treatments
 const badgeVariants = cva(
-  "inline-flex items-center rounded-full border px-2.5 py-0.5 text-xs font-semibold transition-colors focus:outline-none focus:ring-2 focus:ring-ring focus:ring-offset-2",
+  "inline-flex items-center rounded-sm text-xs font-medium px-2 py-1",
   {
     variants: {
       variant: {
-        default:
-          "border-transparent bg-primary text-primary-foreground hover:bg-primary/80",
-        secondary:
-          "border-transparent bg-secondary text-secondary-foreground hover:bg-secondary/80",
-        destructive:
-          "border-transparent bg-destructive text-destructive-foreground hover:bg-destructive/80",
-        outline: "text-foreground",
+        default: "bg-carbon-blue-20 text-carbon-blue-70",
+        secondary: "bg-carbon-gray-20 text-carbon-gray-100",
+        outline: "bg-transparent text-carbon-gray-100 border border-carbon-gray-40",
+        destructive: "bg-[#fff1f1] text-carbon-red-50",
+        success: "bg-[#defbe6] text-carbon-green-50",
+        warning: "bg-[#fff8e1] text-[#f1c21b]",
+        info: "bg-carbon-blue-10 text-carbon-blue-70",
+        purple: "bg-[#f6f2ff] text-carbon-purple-50",
+        teal: "bg-[#d9fbfb] text-carbon-teal-50",
       },
     },
     defaultVariants: {

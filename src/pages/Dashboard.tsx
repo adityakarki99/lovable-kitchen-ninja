@@ -1,12 +1,13 @@
 import React, { useState } from 'react';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
-import OwnerDashboard from '@/components/dashboard/roles/OwnerDashboard';
-import DutyManagerDashboard from '@/components/dashboard/roles/DutyManagerDashboard';
-import ChefDashboard from '@/components/dashboard/roles/ChefDashboard';
-import GeneralDashboard from '@/components/dashboard/roles/GeneralDashboard';
-import DashboardLayout from '@/components/shared/DashboardLayout';
+import { Button } from "@/components/ui/button";
 import { useNavigate } from 'react-router-dom';
 import { PlusCircle, ShoppingCart, PackageCheck, DollarSign } from 'lucide-react';
+import AppLayout from '@/components/shared/layout/AppLayout';
+import MetricsGrid from '@/components/shared/metrics/MetricsGrid';
+import StandardBarChart from '@/components/shared/charts/StandardBarChart';
+import StandardPieChart from '@/components/shared/charts/StandardPieChart';
+import ChefHat from '@/components/icons/ChefHat';
 
 const monthlySpendData = [
   { name: 'Jan', value: 19500 },
@@ -41,43 +42,131 @@ const Dashboard: React.FC = () => {
   const handleUpdateInventory = () => {
     navigate('/inventory');
   };
+  
+  const generalMetrics = [
+    {
+      title: "Recipes",
+      value: "34",
+      description: "Total standardized recipes",
+      icon: <ChefHat className="h-5 w-5" />,
+      iconBgClassName: "bg-carbon-blue-10",
+      iconClassName: "text-carbon-blue-60"
+    },
+    {
+      title: "Avg. Cost",
+      value: "$3.87",
+      description: "Per serving",
+      icon: <DollarSign className="h-5 w-5" />,
+      iconBgClassName: "bg-carbon-green-10",
+      iconClassName: "text-carbon-green-50"
+    },
+    {
+      title: "Low Stock Items",
+      value: "8",
+      description: "Affected recipes",
+      icon: <PackageCheck className="h-5 w-5" />,
+      iconBgClassName: "bg-carbon-red-10",
+      iconClassName: "text-carbon-red-50",
+      trend: {
+        value: 12,
+        isPositive: false
+      }
+    },
+    {
+      title: "Most Popular",
+      value: "Fish & Chips",
+      description: "250 orders this week",
+      icon: <ShoppingCart className="h-5 w-5" />,
+      iconBgClassName: "bg-carbon-purple-10",
+      iconClassName: "text-carbon-purple-50"
+    }
+  ];
+  
+  const headerActions = (
+    <>
+      <Button 
+        size="sm" 
+        className="carbon-btn-primary"
+        onClick={handleAddRecipe}
+      >
+        <PlusCircle className="mr-2 h-4 w-4" />
+        New Recipe
+      </Button>
+      <Button 
+        variant="outline" 
+        size="sm" 
+        className="carbon-btn-tertiary"
+        onClick={handleNewProcurement}
+      >
+        <ShoppingCart className="mr-2 h-4 w-4" />
+        New Order
+      </Button>
+      <Button 
+        variant="outline" 
+        size="sm"
+        className="carbon-btn-tertiary"
+        onClick={handleUpdateInventory}
+      >
+        <PackageCheck className="mr-2 h-4 w-4" />
+        Update Inventory
+      </Button>
+    </>
+  );
+  
+  const GeneralDashboardContent = () => (
+    <div className="space-y-6 animate-fade-in">
+      <MetricsGrid metrics={generalMetrics} />
+      
+      <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
+        <StandardBarChart
+          title="Monthly Spend Analysis"
+          description="Procurement spend by month"
+          data={monthlySpendData}
+          color="#0f62fe"
+          valueFormatter={(value) => `$${value.toLocaleString()}`}
+        />
+        
+        <StandardPieChart
+          title="Category Spend Distribution"
+          description="Procurement spend by category"
+          data={categorySpendData}
+          valueFormatter={(value) => `$${value.toLocaleString()}`}
+        />
+      </div>
+    </div>
+  );
 
   return (
-    <DashboardLayout
+    <AppLayout
       title="Dashboard"
-      description="Good morning, welcome back to your kitchen overview"
+      description="Good morning, welcome to your kitchen overview"
+      headerActions={headerActions}
     >
       <Tabs defaultValue="general" value={activeTab} onValueChange={setActiveTab} className="w-full">
         <TabsList className="grid w-full grid-cols-4 mb-8">
-          <TabsTrigger value="owner">Owner/Manager</TabsTrigger>
-          <TabsTrigger value="dutyManager">Duty Manager</TabsTrigger>
-          <TabsTrigger value="chef">Chef</TabsTrigger>
           <TabsTrigger value="general">General</TabsTrigger>
+          <TabsTrigger value="chef">Chef</TabsTrigger>
+          <TabsTrigger value="dutyManager">Duty Manager</TabsTrigger>
+          <TabsTrigger value="owner">Owner/Manager</TabsTrigger>
         </TabsList>
         
-        <TabsContent value="owner">
-          <OwnerDashboard />
-        </TabsContent>
-        
-        <TabsContent value="dutyManager">
-          <DutyManagerDashboard />
+        <TabsContent value="general">
+          <GeneralDashboardContent />
         </TabsContent>
         
         <TabsContent value="chef">
           <ChefDashboard />
         </TabsContent>
         
-        <TabsContent value="general">
-          <GeneralDashboard 
-            monthlySpendData={monthlySpendData}
-            categorySpendData={categorySpendData}
-            onAddRecipe={handleAddRecipe}
-            onNewProcurement={handleNewProcurement}
-            onUpdateInventory={handleUpdateInventory}
-          />
+        <TabsContent value="dutyManager">
+          <DutyManagerDashboard />
+        </TabsContent>
+        
+        <TabsContent value="owner">
+          <OwnerDashboard />
         </TabsContent>
       </Tabs>
-    </DashboardLayout>
+    </AppLayout>
   );
 };
 

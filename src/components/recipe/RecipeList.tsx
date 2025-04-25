@@ -5,12 +5,44 @@ import { Input } from '@/components/ui/input';
 import { Button } from '@/components/ui/button';
 import { Card } from '@/components/ui/card';
 import { Table, TableHeader, TableBody, TableHead, TableRow, TableCell } from '@/components/ui/table';
+import { Tabs, TabsList, TabsTrigger, TabsContent } from '@/components/ui/tabs';
 import RecipeFilter, { RecipeFilterOptions } from './RecipeFilter';
 import ActiveFilters from './ActiveFilters';
 import SortOptions, { SortOption } from './SortOptions';
 import { Badge } from '@/components/ui/badge';
 import { Progress } from '@/components/ui/progress';
 import { useDebounce } from '@/hooks/use-debounce';
+import { 
+  BarChart as RechartsBarChart, 
+  Bar, 
+  XAxis, 
+  YAxis, 
+  Tooltip, 
+  ResponsiveContainer 
+} from 'recharts';
+
+const ChartContainer = ({ children, config }: { children: React.ReactNode; config: any }) => (
+  <ResponsiveContainer width="100%" height="100%">
+    {children}
+  </ResponsiveContainer>
+);
+
+const ChartTooltipContent = ({ active, payload, label, formatter = (value: any) => value }: any) => {
+  if (!active || !payload || payload.length === 0) {
+    return null;
+  }
+
+  return (
+    <div className="bg-white p-2 border border-gray-200 shadow-md">
+      <p className="font-medium">{label}</p>
+      {payload.map((entry: any, index: number) => (
+        <p key={index} style={{ color: entry.color }}>
+          {formatter(entry.value)}
+        </p>
+      ))}
+    </div>
+  );
+};
 
 const recipes = [
   { 
@@ -616,7 +648,7 @@ const RecipeList: React.FC = () => {
                     <Tooltip
                       content={
                         <ChartTooltipContent 
-                          formatter={(value) => `$${value}`}
+                          formatter={(value: any) => `$${value}`}
                         />
                       }
                     />
@@ -696,7 +728,7 @@ const RecipeList: React.FC = () => {
                     <Tooltip
                       content={
                         <ChartTooltipContent 
-                          formatter={(value) => `${value} recipes`}
+                          formatter={(value: any) => `${value} recipes`}
                         />
                       }
                     />

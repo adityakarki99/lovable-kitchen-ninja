@@ -1,7 +1,5 @@
-import React, { useState, useEffect } from 'react';
-import { Link, useNavigate } from 'react-router-dom';
-import { Search, Filter, PlusCircle, BarChart, List, Grid, Table as TableIcon } from 'lucide-react';
-import { Input } from '@/components/ui/input';
+
+import React, { ReactElement } from 'react';
 import { Button } from '@/components/ui/button';
 import { Card } from '@/components/ui/card';
 import { Table, TableHeader, TableBody, TableHead, TableRow, TableCell } from '@/components/ui/table';
@@ -21,7 +19,14 @@ import {
   ResponsiveContainer 
 } from 'recharts';
 
-const ChartContainer = ({ children, config }: { children: React.ReactNode; config: any }) => (
+// Update ChartContainer to use more specific typing
+const ChartContainer = ({ 
+  children, 
+  config 
+}: { 
+  children: ReactElement; 
+  config: any 
+}) => (
   <ResponsiveContainer width="100%" height="100%">
     {children}
   </ResponsiveContainer>

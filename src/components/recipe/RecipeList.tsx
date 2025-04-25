@@ -1,20 +1,10 @@
-
-import React, { useState, useEffect, useCallback } from 'react';
+import React, { useState, useEffect } from 'react';
 import { Link, useNavigate } from 'react-router-dom';
-import { Search, Filter, PlusCircle, BarChart, List, Grid } from 'lucide-react';
+import { Search, Filter, PlusCircle, BarChart, List, Grid, Table as TableIcon } from 'lucide-react';
 import { Input } from '@/components/ui/input';
 import { Button } from '@/components/ui/button';
 import { Card } from '@/components/ui/card';
-import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
-import { 
-  BarChart as RechartsBarChart, 
-  Bar, 
-  XAxis, 
-  YAxis, 
-  Tooltip, 
-  ResponsiveContainer 
-} from 'recharts';
-import { ChartContainer, ChartTooltipContent } from '@/components/ui/chart';
+import { Table, TableHeader, TableBody, TableHead, TableRow, TableCell } from '@/components/ui/table';
 import RecipeFilter, { RecipeFilterOptions } from './RecipeFilter';
 import ActiveFilters from './ActiveFilters';
 import SortOptions, { SortOption } from './SortOptions';
@@ -167,19 +157,17 @@ const RecipeList: React.FC = () => {
     popularityMin: 0
   });
   const [sortOption, setSortOption] = useState<SortOption>('name-asc');
-  const [viewMode, setViewMode] = useState<'list' | 'grid'>('list');
+  const [viewMode, setViewMode] = useState<'list' | 'grid' | 'table'>('list');
   const [isLoading, setIsLoading] = useState(false);
   const [filteredRecipes, setFilteredRecipes] = useState(recipes);
   
   const navigate = useNavigate();
   const debouncedSearchQuery = useDebounce(searchQuery, 300);
   
-  // Key fix: Move the filtering logic to useEffect instead of doing it during render
   useEffect(() => {
     const applyFilters = () => {
       setIsLoading(true);
       
-      // Simulate loading delay
       const timer = setTimeout(() => {
         let result = [...recipes];
         
@@ -228,7 +216,6 @@ const RecipeList: React.FC = () => {
           recipe.popularity >= filterOptions.popularityMin
         );
         
-        // Apply sorting
         switch (sortOption) {
           case 'name-asc':
             result.sort((a, b) => a.name.localeCompare(b.name));
@@ -351,6 +338,37 @@ const RecipeList: React.FC = () => {
       }
     }
   };
+
+  const renderTableView = () => (
+    <Table>
+      <TableHeader>
+        <TableRow>
+          <TableHead>Name</TableHead>
+          <TableHead>Category</TableHead>
+          <TableHead>Cost</TableHead>
+          <TableHead>Prep Time</TableHead>
+          <TableHead>Rating</TableHead>
+          <TableHead>Popularity</TableHead>
+          <TableHead>Stock Status</TableHead>
+        </TableRow>
+      </TableHeader>
+      <TableBody>
+        {filteredRecipes.map((recipe) => (
+          <TableRow key={recipe.id} className="cursor-pointer hover:bg-muted" onClick={() => navigate(`/recipes/${recipe.id}`)}>
+            <TableCell className="font-medium">{recipe.name}</TableCell>
+            <TableCell>{recipe.category}</TableCell>
+            <TableCell>${recipe.cost.toFixed(2)}</TableCell>
+            <TableCell>{recipe.prepTime}</TableCell>
+            <TableCell>{recipe.rating}</TableCell>
+            <TableCell>{recipe.popularity}%</TableCell>
+            <TableCell>
+              {recipe.ingredients.filter((i: any) => i.inStock).length}/{recipe.ingredients.length}
+            </TableCell>
+          </TableRow>
+        ))}
+      </TableBody>
+    </Table>
+  );
 
   const renderRecipeItem = (recipe: any) => (
     <Link to={`/recipes/${recipe.id}`} key={recipe.id} className="block">
@@ -495,6 +513,14 @@ const RecipeList: React.FC = () => {
             >
               <Grid className="h-4 w-4" />
             </Button>
+            <Button
+              variant={viewMode === 'table' ? 'default' : 'ghost'} 
+              size="sm"
+              className="rounded-none"
+              onClick={() => setViewMode('table')}
+            >
+              <TableIcon className="h-4 w-4" />
+            </Button>
           </div>
           
           <Button 
@@ -548,9 +574,15 @@ const RecipeList: React.FC = () => {
               <Button variant="outline" onClick={handleClearAllFilters}>Clear filters</Button>
             </div>
           ) : (
-            <div className={`grid gap-4 ${viewMode === 'grid' ? 'grid-cols-1 sm:grid-cols-2 lg:grid-cols-3' : 'grid-cols-1'}`}>
-              {filteredRecipes.map(recipe => renderRecipeItem(recipe))}
-            </div>
+            <>
+              {viewMode === 'table' ? (
+                renderTableView()
+              ) : (
+                <div className={`grid gap-4 ${viewMode === 'grid' ? 'grid-cols-1 sm:grid-cols-2 lg:grid-cols-3' : 'grid-cols-1'}`}>
+                  {filteredRecipes.map(recipe => renderRecipeItem(recipe))}
+                </div>
+              )}
+            </>
           )}
         </TabsContent>
         

@@ -1,3 +1,4 @@
+
 import React, { useState, useEffect, useCallback } from 'react';
 import { Link, useNavigate } from 'react-router-dom';
 import { Search, Filter, PlusCircle, BarChart, List, Grid } from 'lucide-react';
@@ -168,95 +169,102 @@ const RecipeList: React.FC = () => {
   const [sortOption, setSortOption] = useState<SortOption>('name-asc');
   const [viewMode, setViewMode] = useState<'list' | 'grid'>('list');
   const [isLoading, setIsLoading] = useState(false);
+  const [filteredRecipes, setFilteredRecipes] = useState(recipes);
   
   const navigate = useNavigate();
   const debouncedSearchQuery = useDebounce(searchQuery, 300);
   
-  const getFilteredRecipes = useCallback(() => {
-    setIsLoading(true);
-    
-    setTimeout(() => {
-      setIsLoading(false);
-    }, 300);
-    
-    let result = [...recipes];
-    
-    if (debouncedSearchQuery) {
-      const query = debouncedSearchQuery.toLowerCase();
-      result = result.filter(recipe => 
-        recipe.name.toLowerCase().includes(query) || 
-        recipe.category.toLowerCase().includes(query) ||
-        recipe.ingredients.some(ing => ing.name.toLowerCase().includes(query)) ||
-        recipe.allergens.some(allergen => allergen.toLowerCase().includes(query))
-      );
-    }
-    
-    if (filterOptions.categories.length > 0) {
-      result = result.filter(recipe => 
-        filterOptions.categories.includes(recipe.category)
-      );
-    }
-    
-    result = result.filter(recipe => 
-      recipe.cost >= filterOptions.costRange[0] && 
-      recipe.cost <= filterOptions.costRange[1]
-    );
-    
-    result = result.filter(recipe => {
-      const prepTimeMinutes = parseInt(recipe.prepTime);
-      return prepTimeMinutes >= filterOptions.prepTimeRange[0] && 
-             prepTimeMinutes <= filterOptions.prepTimeRange[1];
-    });
-    
-    if (filterOptions.allergens.length > 0) {
-      result = result.filter(recipe => 
-        !filterOptions.allergens.some(allergen => 
-          recipe.allergens.includes(allergen)
-        )
-      );
-    }
-    
-    if (filterOptions.inStockOnly) {
-      result = result.filter(recipe => 
-        recipe.ingredients.every(ing => ing.inStock)
-      );
-    }
-    
-    result = result.filter(recipe => 
-      recipe.popularity >= filterOptions.popularityMin
-    );
-    
-    switch (sortOption) {
-      case 'name-asc':
-        result.sort((a, b) => a.name.localeCompare(b.name));
-        break;
-      case 'name-desc':
-        result.sort((a, b) => b.name.localeCompare(a.name));
-        break;
-      case 'cost-asc':
-        result.sort((a, b) => a.cost - b.cost);
-        break;
-      case 'cost-desc':
-        result.sort((a, b) => b.cost - a.cost);
-        break;
-      case 'popularity-desc':
-        result.sort((a, b) => b.popularity - a.popularity);
-        break;
-      case 'prep-asc':
-        result.sort((a, b) => {
-          const aMinutes = parseInt(a.prepTime);
-          const bMinutes = parseInt(b.prepTime);
-          return aMinutes - bMinutes;
+  // Key fix: Move the filtering logic to useEffect instead of doing it during render
+  useEffect(() => {
+    const applyFilters = () => {
+      setIsLoading(true);
+      
+      // Simulate loading delay
+      const timer = setTimeout(() => {
+        let result = [...recipes];
+        
+        if (debouncedSearchQuery) {
+          const query = debouncedSearchQuery.toLowerCase();
+          result = result.filter(recipe => 
+            recipe.name.toLowerCase().includes(query) || 
+            recipe.category.toLowerCase().includes(query) ||
+            recipe.ingredients.some(ing => ing.name.toLowerCase().includes(query)) ||
+            recipe.allergens.some(allergen => allergen.toLowerCase().includes(query))
+          );
+        }
+        
+        if (filterOptions.categories.length > 0) {
+          result = result.filter(recipe => 
+            filterOptions.categories.includes(recipe.category)
+          );
+        }
+        
+        result = result.filter(recipe => 
+          recipe.cost >= filterOptions.costRange[0] && 
+          recipe.cost <= filterOptions.costRange[1]
+        );
+        
+        result = result.filter(recipe => {
+          const prepTimeMinutes = parseInt(recipe.prepTime);
+          return prepTimeMinutes >= filterOptions.prepTimeRange[0] && 
+                prepTimeMinutes <= filterOptions.prepTimeRange[1];
         });
-        break;
-      default:
-        break;
-    }
+        
+        if (filterOptions.allergens.length > 0) {
+          result = result.filter(recipe => 
+            !filterOptions.allergens.some(allergen => 
+              recipe.allergens.includes(allergen)
+            )
+          );
+        }
+        
+        if (filterOptions.inStockOnly) {
+          result = result.filter(recipe => 
+            recipe.ingredients.every(ing => ing.inStock)
+          );
+        }
+        
+        result = result.filter(recipe => 
+          recipe.popularity >= filterOptions.popularityMin
+        );
+        
+        // Apply sorting
+        switch (sortOption) {
+          case 'name-asc':
+            result.sort((a, b) => a.name.localeCompare(b.name));
+            break;
+          case 'name-desc':
+            result.sort((a, b) => b.name.localeCompare(a.name));
+            break;
+          case 'cost-asc':
+            result.sort((a, b) => a.cost - b.cost);
+            break;
+          case 'cost-desc':
+            result.sort((a, b) => b.cost - a.cost);
+            break;
+          case 'popularity-desc':
+            result.sort((a, b) => b.popularity - a.popularity);
+            break;
+          case 'prep-asc':
+            result.sort((a, b) => {
+              const aMinutes = parseInt(a.prepTime);
+              const bMinutes = parseInt(b.prepTime);
+              return aMinutes - bMinutes;
+            });
+            break;
+          default:
+            break;
+        }
+        
+        setFilteredRecipes(result);
+        setIsLoading(false);
+      }, 300);
+      
+      return () => clearTimeout(timer);
+    };
     
-    return result;
+    applyFilters();
   }, [debouncedSearchQuery, filterOptions, sortOption]);
-  
-  const filteredRecipes = getFilteredRecipes();
 
   const handleAddRecipe = () => {
     navigate('/recipes/new');

@@ -1,10 +1,11 @@
 
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { InvoiceScanner } from './invoice';
 import InvoiceList from './InvoiceList';
 import InvoiceDetails from './InvoiceDetails';
 import { toast } from '@/hooks/use-toast';
 import { invoices } from '@/data/procurement';
+import { autoMatchInvoiceItems } from '@/utils/invoiceStockMatcher';
 
 const InvoiceManagement = () => {
   const [view, setView] = useState<'list' | 'details' | 'upload'>('list');
@@ -25,8 +26,13 @@ const InvoiceManagement = () => {
     console.log('Scan completed:', result);
     
     try {
-      // Here we would typically save the invoice to the database
-      // For now, we'll just simulate this with a timeout
+      // Parse invoice items from the scan result
+      const invoiceItems = result.items || [];
+      
+      // Auto match items with stock items
+      const matchedItems = autoMatchInvoiceItems(invoiceItems);
+      const matchPercentage = (matchedItems.filter(item => item.matchedStockItem).length / matchedItems.length) * 100;
+      
       toast({
         title: "Saving invoice data",
         description: "Processing invoice information...",
@@ -36,22 +42,11 @@ const InvoiceManagement = () => {
       await new Promise(resolve => setTimeout(resolve, 1000));
       
       // In a real implementation, we would save to Supabase here
-      // const { data, error } = await supabase
-      //   .from('invoices')
-      //   .insert({
-      //     invoice_number: result.invoiceNumber,
-      //     date_issued: result.date,
-      //     date_due: result.dueDate,
-      //     supplier: result.supplier,
-      //     total_amount: result.amount,
-      //     raw_text: result.rawText,
-      //     status: 'Pending'
-      //   })
-      //   .select()
+      // including the stock_item_id matches for each line item
       
       toast({
         title: "Invoice saved",
-        description: `Invoice ${result.invoiceNumber} has been saved.`,
+        description: `Invoice ${result.invoiceNumber} saved with ${matchPercentage.toFixed(0)}% items auto-matched.`,
       });
       
       setScanning(false);
